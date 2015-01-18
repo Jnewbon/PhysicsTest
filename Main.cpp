@@ -5,7 +5,7 @@
 	#endif
 #endif
 
-#define GLEW_STATIC
+#define GLEW_STATIC 1
 
 #include "LS_Simulator.h"
 
