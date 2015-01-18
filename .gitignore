@@ -1,0 +1,7 @@
+# git ignore file
+ConsoleApplication1.opensdf
+ConsoleApplication1.sdf
+ConsoleApplication1.v12.suo
+ConsoleApplication1.sdf
+ConsoleApplication1.vcxproj
+Debug/

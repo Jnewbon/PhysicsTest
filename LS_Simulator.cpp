@@ -38,7 +38,7 @@ void CLS_Simulator::simulationInit(int argc, char **argv) {
 
 	glutInitWindowSize(SCREEN_X,SCREEN_Y);
 	glutInitWindowPosition(800,0);
-	glutCreateWindow("This be the freeking window yo!");
+	glutCreateWindow("PhysicsTest");
 	
 	//as the display function is a static this call is made very easy.
 	glutDisplayFunc(CLS_Simulator::display);

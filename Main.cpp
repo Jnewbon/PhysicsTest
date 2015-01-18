@@ -5,6 +5,8 @@
 	#endif
 #endif
 
+#define GLEW_STATIC
+
 #include "LS_Simulator.h"
 
 using namespace std;
