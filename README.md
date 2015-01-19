@@ -10,5 +10,3 @@ Pre-built file are located in the build/ folder Required files for the program t
  * PhysTest v*.exe
 
 If you are getting the 'MSCRV100.DLL is missing' message then install the Microsoft C++ Re-Distributable 2012 32-bit this can be found [here](http://www.microsoft.com/en-us/download/details.aspx?id=30679)
-http://www.microsoft.com/en-us/download/details.aspx?id=30679
-
