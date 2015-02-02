@@ -54,7 +54,7 @@
     <ClCompile Include="LS_Screen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\ConsoleApplication1 - Copy\Resources\shader_setup.cpp">
+    <ClCompile Include="Resources\shader_setup.cpp">
       <Filter>Resource Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -80,11 +80,11 @@
     <ClInclude Include="LS_Screen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\ConsoleApplication1 - Copy\Resources\shader_setup.h">
-      <Filter>Resource Files</Filter>
-    </ClInclude>
     <ClInclude Include="LS_VectorPoint.h">
       <Filter>Header Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Resources\shader_setup.h">
+      <Filter>Resource Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

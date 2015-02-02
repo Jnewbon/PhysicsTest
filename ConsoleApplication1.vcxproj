@@ -11,7 +11,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\ConsoleApplication1 - Copy\Resources\shader_setup.cpp" />
     <ClCompile Include="LS_Circle.cpp" />
     <ClCompile Include="LS_ConsoleInterface.cpp" />
     <ClCompile Include="LS_Physics.cpp" />
@@ -19,9 +18,9 @@
     <ClCompile Include="LS_Shapes.cpp" />
     <ClCompile Include="LS_Simulator.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Resources\shader_setup.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\ConsoleApplication1 - Copy\Resources\shader_setup.h" />
     <ClInclude Include="LS_Circle.h" />
     <ClInclude Include="LS_ConsoleInterface.h" />
     <ClInclude Include="LS_Physics.h" />
@@ -30,6 +29,7 @@
     <ClInclude Include="LS_Simulator.h" />
     <ClInclude Include="LS_VAO_Setup.h" />
     <ClInclude Include="LS_VectorPoint.h" />
+    <ClInclude Include="Resources\shader_setup.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Resources\basic_fragment_shader.frag" />
