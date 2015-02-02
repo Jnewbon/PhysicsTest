@@ -40,6 +40,7 @@ struct spacialPoint
 			temp.z = this->z - sp1.z;
 			return temp;
 	}
+
 	//Cartesian Coordinates
 	T x;
 	T y;
@@ -47,6 +48,7 @@ struct spacialPoint
 
 
 };
+
 
 
 /*
@@ -92,6 +94,12 @@ public:
 		return spacialPoint<float>(this->getX() * scalar, this->getY() * scalar, this->getZ() * scalar);
 	}
 
+	//And of course divide bay a scaler
+	CLS_VectorPoint<T> operator/ (const T scalar)
+	{
+		return spacialPoint<float>(this->getX() / scalar, this->getY() / scalar, this->getZ() / scalar);
+	}
+
 	T dotProduct(const CLS_VectorPoint<T> vec1)
 	{
 		//multiply each axis ot both points then add them all together (A · B = A.x * B.x + A.y * B.y + A.z * B.z)
@@ -119,6 +127,8 @@ public:
 	{
 		return 0;
 	}
+
+
 
 
 private:

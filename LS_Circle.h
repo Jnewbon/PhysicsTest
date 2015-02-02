@@ -19,8 +19,7 @@ public:
 
 	static void initCirc();
 
-	void setColour(int r, int g, int b);
-
+	void setScale(float);
 
 	//void draw();
 	

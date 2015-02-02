@@ -25,6 +25,10 @@ private:
 	static std::vector<CLS_Shapes*> objects;
 	static long long lastTimePoint;
 	static std::vector<float> timePoints;
+#ifdef GLUseShader
+		static GLuint shaderProgram;
+#endif // GLUseShader
+
 
 	static void display();
 

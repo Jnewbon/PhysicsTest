@@ -25,6 +25,12 @@
     <Filter Include="Header Files\Physics">
       <UniqueIdentifier>{3a82231f-cfb3-4965-81fc-8147674fa025}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Math">
+      <UniqueIdentifier>{dbe1a2af-5084-40fd-899e-c9fb7c44e363}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Math">
+      <UniqueIdentifier>{f3ec9792-47af-427f-a6a0-9c9bf122b812}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LS_ConsoleInterface.cpp">
@@ -48,6 +54,9 @@
     <ClCompile Include="LS_Screen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\ConsoleApplication1 - Copy\Resources\shader_setup.cpp">
+      <Filter>Resource Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LS_Simulator.h">
@@ -68,11 +77,14 @@
     <ClInclude Include="LS_Physics.h">
       <Filter>Header Files\Physics</Filter>
     </ClInclude>
-    <ClInclude Include="LS_VectorPoint.h">
-      <Filter>Header Files\Physics</Filter>
-    </ClInclude>
     <ClInclude Include="LS_Screen.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ConsoleApplication1 - Copy\Resources\shader_setup.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LS_VectorPoint.h">
+      <Filter>Header Files\Math</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,32 +1,27 @@
 #version 330
 
+//input Vertex Packet
+layout (location = 0) in vec4 position;
+layout (location = 1) in vec4 color;
+layout (location = 2) in vec2 textureCoord;
 
+uniform mat4 modelTrans;
+uniform mat4 modelScale;
+//uniform mat4 modelRota;
 
-uniform mat4 T; // model-view-projection matrix
-
-
-// input vertex packet
-layout (location = 0) in vec2 position;
-layout (location = 1) in vec4 defaultColour;
-//layout (location = 2) in vec2 textureCoord;
-
-
-
-// output vertex packet
+//output vertex Packet
 out packet {
 
-	vec4 colour;
-	//vec2 textureCoord;
-
+	vec4 color;
+	vec2 textureCoord;
+	
 } outputVertex;
 
-
-
 void main(void) {
-
-	outputVertex.colour = defaultColour;
+	
+	//outputVertex.color = color;
 	//outputVertex.textureCoord = textureCoord;
-
-	gl_Position = T * vec4(position, 0.0, 1.0); // MUST set gl_Position
+	
+	gl_Position = modelScale * modelTrans * position;// * position;
+	
 }
-

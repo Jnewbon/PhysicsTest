@@ -1,21 +1,20 @@
 #version 330
 
-uniform vec4 objColour;
+uniform vec4 objectColor;
 
-// input packet
+//input vertex Packet
 in packet {
 
-	vec4 colour;
+	vec4 color;
 	vec2 textureCoord;
+	
+}inputFragment;
 
-} inputFragment;
-
-
-// output packet
-layout (location = 0) out vec4 fragmentColour;
-
+//output packet
+layout (location = 0) out vec4 fragmentColor;
 
 void main(void) {
 
-	fragmentColour = vec4(1.0f,1.0f,0.0f,1.0f);//inputFragment.colour;
+	fragmentColor = objectColor;
+    
 }

@@ -5,15 +5,26 @@
 long long CLS_Physics::collisionCounter = 0;
 
 CLS_VectorPoint<float> CLS_Physics::viewSize = CLS_VectorPoint<float>(0,0);
-float CLS_Physics::RESISTANCE_AIR = 2.5f;
-float CLS_Physics::RESISTANCE_GROUND = 5.0f;
+
+//For the moment the resistance of air and ground can be done by simple math higher the number the more resistance the object encounters when moving
+float CLS_Physics::RESISTANCE_AIR = 0.0f;
+float CLS_Physics::RESISTANCE_GROUND = 0.0f;
+
 float CLS_Physics::ACCELARATION = -9.81f;
 float CLS_Physics::MATH_PI = 3.14159265f;
 bool CLS_Physics::destroyOffScreen = true; //This will destory offscreen objects.
+bool CLS_Physics::PHYSICS_CCD = false; //If The CCD system is active or not
+unsigned int CLS_Physics::PHYSICS_CCD_ITOR = 10; //The number of steps the objects will do for the collision detection
 
 void CLS_Physics::setScreenSize(CLS_VectorPoint<float> value )
 {
 	CLS_Physics::viewSize = value;
+}
+
+void CLS_Physics::CCDStaus(bool CCD, unsigned int CCDloop)
+{
+	CLS_Physics::PHYSICS_CCD = CCD;
+	CLS_Physics::PHYSICS_CCD_ITOR = CCDloop;
 }
 
 bool CLS_Physics::collision_Manhattan_Dist(CLS_Shapes* obj1, CLS_Shapes* obj2)
@@ -132,6 +143,7 @@ bool CLS_Physics::collision_will_collide(CLS_Shapes* obj1, CLS_Shapes* obj2)
 }
 
 	
+//Main Physics Entry point
 void CLS_Physics::applyPhysics(long long elapsedTime, std::vector<CLS_Shapes*> *objects)
 {
 
@@ -142,19 +154,24 @@ void CLS_Physics::applyPhysics(long long elapsedTime, std::vector<CLS_Shapes*> *
 	{
 		for(std::vector<CLS_Shapes*>::iterator j = i+1; j != objects->end(); j++)
 		{
-			//Check for approx collision/Fast collision algorithm
-			if (CLS_Physics::collision_Manhattan_Dist((*i),(*j)))
+			if (CLS_Physics::PHYSICS_CCD)
 			{
-				if (CLS_Physics::collision_Euclidian_Dist((*i),(*j)))
+				CLS_Physics::CCD_ColliosnLoop((*i), (*j));
+			}
+			else
+			{
+				//Check for approx collision/Fast collision algorithm
+				if (CLS_Physics::collision_Manhattan_Dist((*i), (*j)))
 				{
-					CLS_Physics::math_Apply_Collision_Momentum((*i),(*j));
+					if (CLS_Physics::collision_Euclidian_Dist((*i), (*j)))
+					{
+						CLS_Physics::math_Apply_Collision_Momentum((*i), (*j));
 
+					}
 				}
 			}
 		}
 	}
-
-
 }
 
 void CLS_Physics::applyGravity(long long elapsedTime, CLS_Shapes* object)
@@ -169,34 +186,51 @@ void CLS_Physics::applyGravity(long long elapsedTime, CLS_Shapes* object)
 	
 void CLS_Physics::applyObjectMovment(long long elapsedTime,CLS_Shapes* object)
 {
+
+	float resistancefactorX, resistancefactorY;
+
+
+	if (object->getSpeed().getX() <= 0.01f && object->getSpeed().getX() >= -0.01f)
+	{
+		resistancefactorX = 1.0f - (CLS_Physics::RESISTANCE_GROUND / 1000.0f);
+		resistancefactorY = 1.0f - (CLS_Physics::RESISTANCE_AIR / 1000.0f); 
+	}
+	else
+	{
+		resistancefactorX = 1.0f - (CLS_Physics::RESISTANCE_AIR / 1000.0f);
+		resistancefactorY = 1.0f - (CLS_Physics::RESISTANCE_AIR / 1000.0f);
+	}	
 	
 	object->setLocation(object->getLocation() + object->getSpeed());
 
 	CLS_VectorPoint<float> temp1,temp2,temp3;
 	temp1 = object->getCollisionBox();
 	temp2 = object->getLocation();
-	temp3 = object->getSpeed();
+	temp3 = object->getSpeed();	
+
+
+
 
 	if (temp2.getY() < -(CLS_Physics::viewSize.getY()/2) + (temp1.getY()/2) && temp3.getY() < 0.0f)
 	{
 		temp3.setY((temp3.getY() * (1.0f - object->getBounceFactor()))* -1);
 		temp2.setY(temp2.getY() + -(temp2.getY() - (-(CLS_Physics::viewSize.getY()/2) + (temp1.getY()/2))));
 
-		CLS_Physics::collisionCounter++;
+		//CLS_Physics::collisionCounter++;
 	}
 	else if (temp2.getY() > (CLS_Physics::viewSize.getY()/2) - (temp1.getY()/2))
 	{
 		temp3.setY((temp3.getY() * (1.0f - object->getBounceFactor())) * -1);
 		temp2.setY(temp2.getY() - (temp2.getY() - ((CLS_Physics::viewSize.getY()/2) - (temp1.getY()/2))));
 
-		CLS_Physics::collisionCounter++;
+		//CLS_Physics::collisionCounter++;
 	}
 	if (temp2.getX() < -(CLS_Physics::viewSize.getX()/2) + (temp1.getY()/2))
 	{
 			
 		temp3.setX((temp3.getX() * (1.0f - object->getBounceFactor()))* -1 );
 		temp2.setX(temp2.getX() + ( (((CLS_Physics::viewSize.getX()/2)*-1) + (temp1.getX()/2)) - temp2.getX() ));
-		CLS_Physics::collisionCounter++;
+		//CLS_Physics::collisionCounter++;
 	}
 	else if(temp2.getX() > (CLS_Physics::viewSize.getX()/2) - (temp1.getX()/2))
 	{
@@ -204,11 +238,60 @@ void CLS_Physics::applyObjectMovment(long long elapsedTime,CLS_Shapes* object)
 		temp3.setX((temp3.getX() * (1.0f - object->getBounceFactor())) * -1);
 		temp2.setX(temp2.getX() - (temp2.getX() - ((CLS_Physics::viewSize.getX()/2) - (temp1.getX()/2))));
 
-		CLS_Physics::collisionCounter++;
+		//CLS_Physics::collisionCounter++;
 	}
 	
-		object->setLocation(temp2);
-		object->setSpeed(temp3);
+	temp3.setX(temp3.getX() * resistancefactorX);
+	temp3.setY(temp3.getY() * resistancefactorY);
+	object->setLocation(temp2);
+	object->setSpeed(temp3);
+}
+
+void CLS_Physics::CCD_ColliosnLoop(CLS_Shapes *obj1, CLS_Shapes *obj2)
+{
+	//As the detection is done in steps save the original speed of both objects
+
+
+	//And set the speed of the objects to the step amount, The current speed divided by the number of steps to be done
+	obj1->setSpeed((obj1->getSpeed() / float(CLS_Physics::PHYSICS_CCD_ITOR)));
+	obj2->setSpeed((obj2->getSpeed() / float(CLS_Physics::PHYSICS_CCD_ITOR)));
+
+	//Loop for the number of steps to be done
+	for (unsigned int i = 0; i < CLS_Physics::PHYSICS_CCD_ITOR; i++)
+	{
+		//Check the manhattan distance first
+		if (CLS_Physics::collision_Manhattan_Dist(obj1, obj2))
+		{
+			//Then the euclidian
+			if (CLS_Physics::collision_Euclidian_Dist(obj1, obj2))
+			{
+				//Rest the speed back th there original for the calculations to be accurate
+				obj1->setSpeed((obj1->getSpeed() * float(CLS_Physics::PHYSICS_CCD_ITOR)));
+				obj2->setSpeed((obj2->getSpeed() * float(CLS_Physics::PHYSICS_CCD_ITOR)));
+				CLS_Physics::math_Apply_Collision_Momentum(obj1, obj2);
+				//If the object has cillided then it wont collide with this object again, Probably
+				obj1->setSpeed((obj1->getSpeed() / float(CLS_Physics::PHYSICS_CCD_ITOR)));
+				obj2->setSpeed((obj2->getSpeed() / float(CLS_Physics::PHYSICS_CCD_ITOR)));
+				//Add whats left of the movment to the 
+				for (i; i < CLS_Physics::PHYSICS_CCD_ITOR; i++)
+				{
+					CLS_Physics::applyObjectMovment(0, obj1);
+					CLS_Physics::applyObjectMovment(0, obj2);
+				}
+				//exit the for loop
+				break;
+			}
+		}
+
+		//Apply the objects movment for the next step
+		CLS_Physics::applyObjectMovment(0, obj1);
+		CLS_Physics::applyObjectMovment(0, obj2);
+
+	}
+
+	//Rest the speed back th there original
+	obj1->setSpeed((obj1->getSpeed() * float(CLS_Physics::PHYSICS_CCD_ITOR)));
+	obj2->setSpeed((obj2->getSpeed() * float(CLS_Physics::PHYSICS_CCD_ITOR)));
 }
 
 void CLS_Physics::math_Apply_Collision_Momentum(CLS_Shapes* obj1, CLS_Shapes* obj2)
@@ -260,6 +343,8 @@ void CLS_Physics::math_Apply_Collision_Momentum(CLS_Shapes* obj1, CLS_Shapes* ob
 	obj1->setSpeed(fv1);
 	obj2->setSpeed(fv2);
 	CLS_Physics::collisionCounter++;
+
+
 }
 
 template <typename T>

@@ -1,10 +1,11 @@
 #pragma once
-
+#define GLUseShader
 #include "LS_VectorPoint.h"
 
 #include "GL\glew\glew.h" 
 #include "GL\glut.h"
 #include "GL\freeglut.h"
+#include "glm\glm.hpp"
 
 enum Type {CIRCLE = 36};
 class CLS_Shapes
@@ -29,6 +30,7 @@ public:
 	float getScale();
 	CLS_VectorPoint<float> getCollisionBox();
 	float getBounceFactor();
+	glm::vec4 getColor();
 
 	//Setters
 	virtual void setLocation(CLS_VectorPoint<float>);
@@ -36,12 +38,17 @@ public:
 	virtual void setMass(float);
 	virtual void setModelVAO(GLuint);
 	virtual void setType(Type);
-	virtual void setColour(int, int, int);
+	virtual void setColour(float, float, float, float);
 	virtual void setScale(float);
 	virtual void setCollisionBox(CLS_VectorPoint<float>);
 	virtual void setBounceFactor(float);
 	
+#ifdef GLUseShader
+	virtual void draw(GLuint);
+#else
 	virtual void draw();
+#endif // GLUseShader
+
 
 private:
 
@@ -84,6 +91,9 @@ private:
 
 	//This is the speed lost when bouncing on the floor 0.1 = a 10% loss is speed
 	float bouncyFactor;
+
+	//the color of the object
+	glm::vec4 color;
 	
 	
 };

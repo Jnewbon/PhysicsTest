@@ -1,11 +1,21 @@
 
+//This will determin if the program will use the shaders or not
+#define GLUseShader
+
+
 #include "LS_Simulator.h"
 #include "LS_Circle.h"
 #include "LS_VectorPoint.h"
 #include "LS_Physics.h"
 
+#ifdef GLUseShader
+	#include "Resources\shader_setup.h"
+#endif // GLUseShader
+
+
 #include <time.h>
 #include <sstream>
+
 
 using namespace std;
 
@@ -17,6 +27,7 @@ std::vector<CLS_Shapes*> CLS_Simulator::objects;
 long long CLS_Simulator::lastTimePoint = 0;
 bool CLS_Simulator::quit = false;
 std::vector<float> CLS_Simulator::timePoints;
+GLuint CLS_Simulator::shaderProgram = 0;
 
 CLS_Simulator::~CLS_Simulator(void)
 {
@@ -29,6 +40,7 @@ CLS_Simulator::~CLS_Simulator(void)
 }
 
 void CLS_Simulator::simulationInit(int argc, char **argv) {
+
 
 	glutInit(&argc,argv);
 
@@ -48,6 +60,7 @@ void CLS_Simulator::simulationInit(int argc, char **argv) {
 	glutMotionFunc(CLS_Simulator::activeMouseHandler);
 
 
+
 	//Initilized glew and output if successful
 	GLenum err = glewInit();
 	screen.output("GLEW Setup..");
@@ -61,46 +74,64 @@ void CLS_Simulator::simulationInit(int argc, char **argv) {
 
 	//glutFullScreenToggle();
 
+#ifdef GLUseShader
+	shaderProgram = setupShaders("Resources//basic_vertex_shader.vert", "Resources//basic_fragment_shader.frag");
+
+#endif // GLUseShader
+
 	CLS_Physics::setScreenSize(CLS_VectorPoint<float>(SCREEN_X,SCREEN_Y));
+	CLS_Physics::CCDStaus(true, 50);
 
 	screen.outputNL("SPF:");
 	screen.outputNL("FPS:");
 	screen.outputNL("Collision Counter:");
 	screen.outputNL("Number of Objects:");
 
-
+	
 	//Initilize the Circle Template
 	CLS_Circle::initCirc();
 
 	// #### Test object
-
 	CLS_Circle* newObject;
-	//newObject = new CLS_Circle();
-	////Set the objects attributes
-	//newObject->setLocation(CLS_VectorPoint<float>(-300.0f,0.0f));
-	//newObject->setSpeed(CLS_VectorPoint<float>(-2,0));
-	//newObject->setMass(100.0f);
-	//newObject->setColour(255,0,0);
-	//newObject->setBounceFactor(-0.001f);
+	
+	newObject = new CLS_Circle();
+	//Set the objects attributes
+	newObject->setLocation(CLS_VectorPoint<float>(300.0f,0.0f));
+	newObject->setSpeed(CLS_VectorPoint<float>(-20.0f,0.0f));
+	newObject->setMass(100.0f);
+	newObject->setColour(1.0f,0.0f,0.0f, 1.0f);
+	newObject->setBounceFactor(-0.001f);
 
 
-	////Push the object into the vector
-	//objects.push_back(newObject);
-
-	for (int i = 0; i < 15; i++)
-	{
-		newObject = new CLS_Circle();
-		//Set the objects attributes
-		newObject->setLocation(CLS_VectorPoint<float>(-300.0f + i*40.0f,-300.0f + i*40.0f));
-		newObject->setSpeed(CLS_VectorPoint<float>(-2,0));
-		newObject->setMass(10.0f);
-		newObject->setColour(255,255,255);
-		newObject->setBounceFactor(-0.001f);
+	//Push the object into the vector
+	objects.push_back(newObject);	
+	
+	newObject = new CLS_Circle();
+	//Set the objects attributes
+	newObject->setLocation(CLS_VectorPoint<float>(-300.0f, 0.0f));
+	newObject->setSpeed(CLS_VectorPoint<float>(20.0f, 0.0f));
+	newObject->setMass(100.0f);
+	newObject->setColour(0.0f, 1.0f, 0.0f,1.0f);
+	newObject->setBounceFactor(-0.001f);
 
 
-		//Push the object into the vector
-		objects.push_back(newObject);
-	}
+	//Push the object into the vector
+	objects.push_back(newObject);
+
+	//for (int i = 0; i < 1; i++)
+	//{
+	//	newObject = new CLS_Circle();
+	//	//Set the objects attributes
+	//	newObject->setLocation(CLS_VectorPoint<float>(-300.0f + i*40.0f,-300.0f + i*40.0f));
+	//	newObject->setSpeed(CLS_VectorPoint<float>(-2,0));
+	//	newObject->setMass(10.0f);
+	//	newObject->setColour(255,255,255);
+	//	newObject->setBounceFactor(0.001f);
+
+
+	//	//Push the object into the vector
+	//	objects.push_back(newObject);
+	//}
 	//bool vSync = wglSwapIntervalEXT(1);
 	quit = false;
 }
@@ -180,14 +211,21 @@ void CLS_Simulator::mainLoop() {
 
 void CLS_Simulator::display() {
 
+#ifdef GLUseShader
+	glUseProgram(shaderProgram);
+#endif // GLUseShader
+
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	for(vector<CLS_Shapes*>::iterator i = objects.begin(); i != objects.end(); i++)
 	{
-		CLS_Shapes* temp = (*i);
+#ifdef GLUseShader
+		(*i)->draw(shaderProgram);
+#else
+		(*i)->draw();
+#endif // GLUseShader
 
-		temp->draw();
-		//(*i)->draw();
 
 	}
 	glutSwapBuffers();

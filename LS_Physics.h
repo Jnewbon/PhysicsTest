@@ -12,8 +12,8 @@ class CLS_Physics {
 private:
 
 	// Continuous Collision Detection
-	static const bool PHYSICS_CCD  = true;
-	static const unsigned int PHYSICS_CCD_ITOR = 10;
+	static bool PHYSICS_CCD;
+	static unsigned int PHYSICS_CCD_ITOR;
 
 	//Private contructor will prevent instantces being made.
 	CLS_Physics();
@@ -32,15 +32,18 @@ public:
 	static long long collisionCounter;
 
 	static void setScreenSize(CLS_VectorPoint<float>);
+	static void CCDStaus(bool, unsigned int);
 
 	static bool collision_Manhattan_Dist(CLS_Shapes*, CLS_Shapes*);
 	static bool collision_Euclidian_Dist(CLS_Shapes*, CLS_Shapes*);
 	static bool collision_will_collide(CLS_Shapes*, CLS_Shapes*);
 
+	//Main Pyysics entry point
 	static void applyPhysics(long long elapsedTime, std::vector<CLS_Shapes*> *objects);
 	static void applyGravity(long long elapsedTime, CLS_Shapes* object);
 	static void applyObjectMovment(long long elapsedTime,CLS_Shapes* object);
 
+	static void CCD_ColliosnLoop(CLS_Shapes*, CLS_Shapes*);
 	
 	static void math_Apply_Collision_Momentum(CLS_Shapes*, CLS_Shapes*);
 	template <typename T>

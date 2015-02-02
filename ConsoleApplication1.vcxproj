@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\ConsoleApplication1 - Copy\Resources\shader_setup.cpp" />
     <ClCompile Include="LS_Circle.cpp" />
     <ClCompile Include="LS_ConsoleInterface.cpp" />
     <ClCompile Include="LS_Physics.cpp" />
@@ -20,6 +21,7 @@
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\ConsoleApplication1 - Copy\Resources\shader_setup.h" />
     <ClInclude Include="LS_Circle.h" />
     <ClInclude Include="LS_ConsoleInterface.h" />
     <ClInclude Include="LS_Physics.h" />
