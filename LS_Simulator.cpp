@@ -7,6 +7,8 @@
 #include "LS_Circle.h"
 #include "LS_VectorPoint.h"
 #include "LS_Physics.h"
+#include "glm\glm.hpp"
+#include "glm\gtc\matrix_transform.hpp"
 
 #ifdef GLUseShader
 	#include "Resources\shader_setup.h"
@@ -27,7 +29,11 @@ std::vector<CLS_Shapes*> CLS_Simulator::objects;
 long long CLS_Simulator::lastTimePoint = 0;
 bool CLS_Simulator::quit = false;
 std::vector<float> CLS_Simulator::timePoints;
+
+#ifdef GLUseShader
 GLuint CLS_Simulator::shaderProgram = 0;
+
+#endif // GLUseShader
 
 CLS_Simulator::~CLS_Simulator(void)
 {
@@ -70,7 +76,12 @@ void CLS_Simulator::simulationInit(int argc, char **argv) {
 	{	screen.outputNL("FAILED");	}
 	
 	glClearColor(0.5,0.5,0.5,1.0);
-	glOrtho(-(SCREEN_X/2),(SCREEN_X/2),-(SCREEN_Y/2),(SCREEN_Y/2),-1.0,1.0);
+
+#ifndef GLUseShader
+	//this is only needed if the shaders are not in use, as the matrices take care of this in the draw function
+	glOrtho(-(SCREEN_X / 2), (SCREEN_X / 2), -(SCREEN_Y / 2), (SCREEN_Y / 2), -1.0, 1.0);
+
+#endif // GLUseShader
 
 	//glutFullScreenToggle();
 
@@ -80,7 +91,7 @@ void CLS_Simulator::simulationInit(int argc, char **argv) {
 #endif // GLUseShader
 
 	CLS_Physics::setScreenSize(CLS_VectorPoint<float>(SCREEN_X,SCREEN_Y));
-	CLS_Physics::CCDStaus(true, 50);
+	CLS_Physics::CCDStaus(false, 10);
 
 	screen.outputNL("SPF:");
 	screen.outputNL("FPS:");
@@ -94,44 +105,44 @@ void CLS_Simulator::simulationInit(int argc, char **argv) {
 	// #### Test object
 	CLS_Circle* newObject;
 	
-	newObject = new CLS_Circle();
-	//Set the objects attributes
-	newObject->setLocation(CLS_VectorPoint<float>(300.0f,0.0f));
-	newObject->setSpeed(CLS_VectorPoint<float>(-20.0f,0.0f));
-	newObject->setMass(100.0f);
-	newObject->setColour(1.0f,0.0f,0.0f, 1.0f);
-	newObject->setBounceFactor(-0.001f);
+	//newObject = new CLS_Circle();
+	////Set the objects attributes
+	//newObject->setLocation(CLS_VectorPoint<float>(300.0f,0.0f));
+	//newObject->setSpeed(CLS_VectorPoint<float>(-40.0f,0.0f));
+	//newObject->setMass(100.0f);
+	//newObject->setColour(1.0f,0.0f,0.0f, 1.0f);
+	//newObject->setBounceFactor(-0.001f);
 
 
-	//Push the object into the vector
-	objects.push_back(newObject);	
-	
-	newObject = new CLS_Circle();
-	//Set the objects attributes
-	newObject->setLocation(CLS_VectorPoint<float>(-300.0f, 0.0f));
-	newObject->setSpeed(CLS_VectorPoint<float>(20.0f, 0.0f));
-	newObject->setMass(100.0f);
-	newObject->setColour(0.0f, 1.0f, 0.0f,1.0f);
-	newObject->setBounceFactor(-0.001f);
+	////Push the object into the vector
+	//objects.push_back(newObject);	
+	//
+	//newObject = new CLS_Circle();
+	////Set the objects attributes
+	//newObject->setLocation(CLS_VectorPoint<float>(-300.0f, 0.0f));
+	//newObject->setSpeed(CLS_VectorPoint<float>(40.0f, 0.0f));
+	//newObject->setMass(100.0f);
+	//newObject->setColour(0.0f, 1.0f, 0.0f,1.0f);
+	//newObject->setBounceFactor(-0.001f);
 
 
-	//Push the object into the vector
-	objects.push_back(newObject);
+	////Push the object into the vector
+	//objects.push_back(newObject);
+	srand(0);
+	for (int i = 0; i < 15; i++)
+	{
+		newObject = new CLS_Circle();
+		//Set the objects attributes
+		newObject->setLocation(glm::vec3(-300.0f + i*40.0f, -300.0f + i*40.0f, 0.0f));
+		newObject->setSpeed(glm::vec3(-2.0f, 0.0f, 0.0f));
+		newObject->setMass(10.0f);
+		newObject->setColour(glm::vec4(float(rand() % 255) / 255.0f, float(rand() % 255) / 255.0f, float(rand() % 255) / 255.0f, 1.0f));
+		newObject->setBounceFactor(-0.001f);
 
-	//for (int i = 0; i < 1; i++)
-	//{
-	//	newObject = new CLS_Circle();
-	//	//Set the objects attributes
-	//	newObject->setLocation(CLS_VectorPoint<float>(-300.0f + i*40.0f,-300.0f + i*40.0f));
-	//	newObject->setSpeed(CLS_VectorPoint<float>(-2,0));
-	//	newObject->setMass(10.0f);
-	//	newObject->setColour(255,255,255);
-	//	newObject->setBounceFactor(0.001f);
 
-
-	//	//Push the object into the vector
-	//	objects.push_back(newObject);
-	//}
+		//Push the object into the vector
+		objects.push_back(newObject);
+	}
 	//bool vSync = wglSwapIntervalEXT(1);
 	quit = false;
 }
@@ -213,6 +224,13 @@ void CLS_Simulator::display() {
 
 #ifdef GLUseShader
 	glUseProgram(shaderProgram);
+
+	glm::mat4 orthomatrix = glm::ortho(float(-SCREEN_X/2), float(SCREEN_X/2), float(-SCREEN_Y/2), float(SCREEN_Y/2),-1.0f,1.0f);
+
+	GLuint matrixTransLoc = glGetUniformLocation(shaderProgram, "viewMatrix");
+
+	glUniformMatrix4fv(matrixTransLoc, 1, GL_FALSE, &orthomatrix[0][0]);
+
 #endif // GLUseShader
 
 

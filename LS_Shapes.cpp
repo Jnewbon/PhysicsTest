@@ -1,6 +1,8 @@
 //This will determin if the program will use the shaders or not
 #define GLUseShader
 
+
+
 #include "LS_Shapes.h"
 #include "LS_VAO_Setup.h"
 #include "LS_VectorPoint.h"
@@ -23,12 +25,12 @@ CLS_Shapes::~CLS_Shapes(void)
 
 }
 
-CLS_VectorPoint<float> CLS_Shapes::getLocation()
+glm::vec3 CLS_Shapes::getLocation()
 {
 	return this->location;
 }
 
-CLS_VectorPoint<float> CLS_Shapes::getSpeed()
+glm::vec3 CLS_Shapes::getSpeed()
 {
 	return this->speed;
 }
@@ -63,7 +65,7 @@ float CLS_Shapes::getBounceFactor()
 	return this->bouncyFactor;
 }
 
-CLS_VectorPoint<float> CLS_Shapes::getCollisionBox()
+glm::vec3 CLS_Shapes::getCollisionBox()
 {
 	return this->CollisionBoxSize;
 }
@@ -73,12 +75,12 @@ glm::vec4 CLS_Shapes::getColor()
 	return this->color;
 }
  
-void CLS_Shapes::setLocation(CLS_VectorPoint<float> newLoc)
+void CLS_Shapes::setLocation(const glm::vec3 newLoc)
 {
 	this->location = newLoc;
 }
 
-void CLS_Shapes::setSpeed(CLS_VectorPoint<float> newSpeed)
+void CLS_Shapes::setSpeed(const glm::vec3 newSpeed)
 {
 	this->speed = newSpeed;
 }
@@ -105,9 +107,9 @@ void CLS_Shapes::setType(Type newType)
 	this->shapeType = newType;
 }
 
-void CLS_Shapes::setColour(float r, float g, float b, float a)
+void CLS_Shapes::setColour(const glm::vec4 newcolor)
 {
-	this->color = glm::vec4(r, g, b, a);
+	this->color = newcolor;
 }
 
 #ifdef GLUseShader
@@ -115,22 +117,20 @@ void CLS_Shapes::setColour(float r, float g, float b, float a)
 void CLS_Shapes::draw(GLuint shaderProgram)
 {
 
-	GLuint matrixTransLoc = glGetUniformLocation(shaderProgram, "modelTrans");
-	GLuint matrixScaleLoc = glGetUniformLocation(shaderProgram, "modelScale");
-	//GLuint matrixRoataLoc = glGetUniformLocation(shaderProgram, "modelRota");
+
+	GLuint modelMatrixLoc = glGetUniformLocation(shaderProgram, "modelMatrix");
+
 	GLuint colorLoc = glGetUniformLocation(shaderProgram, "objectColor");
 
-	glm::mat4 transMat = glm::translate(glm::mat4(1.0f), glm::vec3(this->getLocation().getX(), this->getLocation().getY(), 0.0f));
+	glm::mat4 transMat = glm::translate(glm::mat4(1.0f), glm::vec3(this->getLocation().x, this->getLocation().y, 0.0f));
 	glm::mat4 scaleMat = glm::scale(glm::mat4(1.0f), glm::vec3(this->getScale(), this->getScale(), this->getScale()));
-	//glm::mat4 rotatMat = 
-	
+
+	glm::mat4 medelMat = transMat * scaleMat;
+
 	glm::vec4 color = this->getColor();
 
-	//CLS_VectorPoint<float>::MultiplyMatrix(this->location.GetTranlationMatrix(), CLS_VectorPoint<float>::ScaleMatrix(this->getScale()));
-
 	glUniform4fv(colorLoc, 1, (GLfloat*)&color);
-	glUniformMatrix4fv(matrixTransLoc, 1, GL_TRUE, &transMat[0][0]);
-	glUniformMatrix4fv(matrixScaleLoc, 1, GL_TRUE, &scaleMat[0][0]);
+	glUniformMatrix4fv(modelMatrixLoc, 1, GL_FALSE, &medelMat[0][0]);
 
 	glBindVertexArray(this->modelVAO);
 
@@ -172,7 +172,7 @@ void CLS_Shapes::setBounceFactor(float value)
 	this->bouncyFactor = value;
 }
 
-void CLS_Shapes::setCollisionBox(CLS_VectorPoint<float> value)
+void CLS_Shapes::setCollisionBox(const glm::vec3 newcol)
 {
-	this->CollisionBoxSize = value;
+	this->CollisionBoxSize = newcol;
 }

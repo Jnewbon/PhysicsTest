@@ -2,10 +2,13 @@
 #define GLUseShader
 #include "LS_VectorPoint.h"
 
+#define GLM_FORCE_PURE
+
 #include "GL\glew\glew.h" 
 #include "GL\glut.h"
 #include "GL\freeglut.h"
 #include "glm\glm.hpp"
+
 
 enum Type {CIRCLE = 36};
 class CLS_Shapes
@@ -21,26 +24,26 @@ public:
 	static int nextID;
 
 	//Getters
-	CLS_VectorPoint<float> getLocation();
-	CLS_VectorPoint<float> getSpeed();
+	glm::vec3 getLocation();
+	glm::vec3 getSpeed();
 	float getMass();
 	bool isImmovable();
 	Type getType();
 	GLuint getModelVAO();
 	float getScale();
-	CLS_VectorPoint<float> getCollisionBox();
+	glm::vec3 getCollisionBox();
 	float getBounceFactor();
 	glm::vec4 getColor();
 
 	//Setters
-	virtual void setLocation(CLS_VectorPoint<float>);
-	virtual void setSpeed(CLS_VectorPoint<float>);
+	virtual void setLocation(const glm::vec3);
+	virtual void setSpeed(const glm::vec3);
 	virtual void setMass(float);
 	virtual void setModelVAO(GLuint);
 	virtual void setType(Type);
-	virtual void setColour(float, float, float, float);
+	virtual void setColour(const glm::vec4);
 	virtual void setScale(float);
-	virtual void setCollisionBox(CLS_VectorPoint<float>);
+	virtual void setCollisionBox(const glm::vec3);
 	virtual void setBounceFactor(float);
 	
 #ifdef GLUseShader
@@ -65,10 +68,10 @@ private:
 	GLuint colorUBO;
 	
 	//The locartion of the object in space
-	CLS_VectorPoint<float> location;
+	glm::vec3 location;
 
 	//the Speed of the object in space
-	CLS_VectorPoint<float> speed;
+	glm::vec3 speed;
 
 
 
@@ -87,9 +90,9 @@ private:
 	bool noClip;
 
 	//A box for quick colision dection using manhattan distance
-	CLS_VectorPoint<float> CollisionBoxSize;		//this is for the size of the collison box
+	glm::vec3 CollisionBoxSize;		//this is for the size of the collison box
 
-	//This is the speed lost when bouncing on the floor 0.1 = a 10% loss is speed
+	//This is the speed lost when bouncing on the floor 0.1 = a 10% loss in speed
 	float bouncyFactor;
 
 	//the color of the object
