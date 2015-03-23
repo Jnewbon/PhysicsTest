@@ -1,5 +1,6 @@
 #pragma once
 
+#include "options.h"
 #include <string>
 
 #include "LS_ConsoleInterface.h"

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "options.h"
 #include <iostream>
 #include <string>
 #include <windows.h>

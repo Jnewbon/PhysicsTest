@@ -1,5 +1,6 @@
 #pragma once
 
+#include "options.h"
 #include "LS_Shapes.h"
 
 #include "GL\glew\glew.h"

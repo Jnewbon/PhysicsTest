@@ -1,7 +1,3 @@
-//This will determin if the program will use the shaders or not
-#define GLUseShader
-
-
 
 #include "LS_Shapes.h"
 #include "LS_VAO_Setup.h"
@@ -9,6 +5,7 @@
 #include "matrix4.h"
 #include "vec4.h"
 #include "glm\gtc\matrix_transform.hpp"
+#include "glm\gtx\scalar_multiplication.hpp"
 
 int CLS_Shapes::nextID = 0;
 
@@ -17,7 +14,11 @@ CLS_Shapes::CLS_Shapes(void)
 	//This will give the shape a unique ID
 	shapeID = nextID;
 	nextID++;
-
+	this->movable = true;
+	this->isColliding = false;
+	this->showCollisionColour;
+	this->rotationVelocity = 0.0f;
+	this->currentRotation = 0.0f;
 }
 
 CLS_Shapes::~CLS_Shapes(void)
@@ -40,12 +41,12 @@ float CLS_Shapes::getMass()
 	return this->mass;
 }
 
-bool CLS_Shapes::isImmovable()
+bool CLS_Shapes::isMovable()
 {
-	return this->immovable;
+	return this->movable;
 }
 
-Type CLS_Shapes::getType()
+CLS_Shapes::Type CLS_Shapes::getType()
 {
 	return this->shapeType;
 }
@@ -124,10 +125,16 @@ void CLS_Shapes::draw(GLuint shaderProgram)
 
 	glm::mat4 transMat = glm::translate(glm::mat4(1.0f), glm::vec3(this->getLocation().x, this->getLocation().y, 0.0f));
 	glm::mat4 scaleMat = glm::scale(glm::mat4(1.0f), glm::vec3(this->getScale(), this->getScale(), this->getScale()));
+	glm::mat4 rotatMat = glm::rotate(glm::mat4(1.0f), this->currentRotation, glm::vec3(0.0f, 0.0f, 1.0f));
 
-	glm::mat4 medelMat = transMat * scaleMat;
-
-	glm::vec4 color = this->getColor();
+	glm::mat4 medelMat = transMat * scaleMat * rotatMat;
+	glm::vec4 color;
+	if (this->getIsColliding())
+	{
+		color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+	}
+	else
+		color = this->getColor();
 
 	glUniform4fv(colorLoc, 1, (GLfloat*)&color);
 	glUniformMatrix4fv(modelMatrixLoc, 1, GL_FALSE, &medelMat[0][0]);
@@ -138,6 +145,10 @@ void CLS_Shapes::draw(GLuint shaderProgram)
 
 	glBindVertexArray(0);
 
+	color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	glUniform4fv(colorLoc, 1, (GLfloat*)&color);
+	this->drawCenterCross();
+
 }
 
 #else
@@ -146,7 +157,7 @@ void CLS_Shapes::draw()
 
 
 	glPushMatrix();
-	glTranslatef(this->location.getX(), this->location.getY(), 1.0f);
+	glTranslatef(this->location.x, this->location.y, 1.0f);
 	glPushMatrix();
 	glScalef(this->scale, this->scale, 1.0);
 
@@ -175,4 +186,58 @@ void CLS_Shapes::setBounceFactor(float value)
 void CLS_Shapes::setCollisionBox(const glm::vec3 newcol)
 {
 	this->CollisionBoxSize = newcol;
+}
+
+void CLS_Shapes::setMovableStatus(bool isMovable){
+
+	this->movable = isMovable;
+}
+
+void CLS_Shapes::setIscolliding(bool isColliding)
+{
+	if (isColliding)
+		this->showCollisionColour = 4;
+}
+
+bool CLS_Shapes::getIsColliding()
+{
+	if (this->showCollisionColour > 0)
+	{
+		this->showCollisionColour--;
+		return true;
+	}
+	else
+		return false;
+}
+
+void CLS_Shapes::drawCenterCross()
+{
+	glBegin(GL_LINES);
+	float crossScale = 0.9f;
+	glColor3f(0.0, 0.0, 0.0);
+	glVertex2f(0.0f, crossScale);
+	glVertex2f(0.0f, -crossScale);
+	glVertex2f(crossScale, 0.0f);
+	glVertex2f(-crossScale, 0.0f);
+	glEnd();
+}
+
+void CLS_Shapes::setRotationalVelocity(float velo)
+{
+	this->rotationVelocity = velo;
+}
+
+float CLS_Shapes::getRotationalVelociy()
+{
+	return this->rotationVelocity;
+}
+
+void CLS_Shapes::setRotaion(float rota)
+{
+	this->currentRotation = rota;
+}
+
+float CLS_Shapes::getRotation()
+{
+	return this->currentRotation;
 }

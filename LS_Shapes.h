@@ -1,8 +1,7 @@
 #pragma once
-#define GLUseShader
+#include "options.h"
 #include "LS_VectorPoint.h"
 
-#define GLM_FORCE_PURE
 
 #include "GL\glew\glew.h" 
 #include "GL\glut.h"
@@ -10,11 +9,12 @@
 #include "glm\glm.hpp"
 
 
-enum Type {CIRCLE = 36};
 class CLS_Shapes
 {
 public:
 
+enum Type { CIRCLE = 36,
+			LINE = 2};
 	
 
 	CLS_Shapes(void);
@@ -27,13 +27,17 @@ public:
 	glm::vec3 getLocation();
 	glm::vec3 getSpeed();
 	float getMass();
-	bool isImmovable();
+	bool isMovable();
 	Type getType();
 	GLuint getModelVAO();
 	float getScale();
 	glm::vec3 getCollisionBox();
 	float getBounceFactor();
 	glm::vec4 getColor();
+	bool getIsColliding();
+	float getRotationalVelociy();
+	float getRotation();
+
 
 	//Setters
 	virtual void setLocation(const glm::vec3);
@@ -45,6 +49,14 @@ public:
 	virtual void setScale(float);
 	virtual void setCollisionBox(const glm::vec3);
 	virtual void setBounceFactor(float);
+	virtual void setMovableStatus(bool);
+	virtual void setIscolliding(bool);
+	virtual void setRotationalVelocity(float);
+	virtual void setRotaion(float);
+	
+
+
+	virtual void drawCenterCross();
 	
 #ifdef GLUseShader
 	virtual void draw(GLuint);
@@ -66,15 +78,20 @@ private:
 
 	//Virtual Buffer Objects of the shape
 	GLuint colorUBO;
+
+	//Virtual Buffer Objects of the shape
+	GLuint texture;
 	
 	//The locartion of the object in space
 	glm::vec3 location;
 
 	//the Speed of the object in space
 	glm::vec3 speed;
+	float rotationVelocity;
+	float currentRotation;
 
-
-
+	bool isColliding;
+	int showCollisionColour;
 	//####Object Propities####
 
 	//This is for scaling the object size, and calculating the collision box
@@ -83,8 +100,8 @@ private:
 	//Mass of the object
 	float mass;
 
-	//If the object is immovable
-	bool immovable;
+	//If the object is movable (Motion /collision applied)
+	bool movable;
 
 	//if the object can collide True if no collision
 	bool noClip;

@@ -1,17 +1,18 @@
 
 //This will determin if the program will use the shaders or not
-#define GLUseShader
+
 
 
 #include "LS_Simulator.h"
 #include "LS_Circle.h"
+#include "CLS_Line.h"
 #include "LS_VectorPoint.h"
 #include "LS_Physics.h"
 #include "glm\glm.hpp"
 #include "glm\gtc\matrix_transform.hpp"
 
 #ifdef GLUseShader
-	#include "Resources\shader_setup.h"
+	#include "shader_setup.h"
 #endif // GLUseShader
 
 
@@ -55,7 +56,7 @@ void CLS_Simulator::simulationInit(int argc, char **argv) {
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
 
 	glutInitWindowSize(SCREEN_X,SCREEN_Y);
-	glutInitWindowPosition(800,0);
+	glutInitWindowPosition(1920,0);
 	glutCreateWindow("PhysicsTest");
 	
 	//as the display function is a static this call is made very easy.
@@ -91,20 +92,21 @@ void CLS_Simulator::simulationInit(int argc, char **argv) {
 #endif // GLUseShader
 
 	CLS_Physics::setScreenSize(CLS_VectorPoint<float>(SCREEN_X,SCREEN_Y));
-	CLS_Physics::CCDStaus(false, 10);
+	CLS_Physics::CCDStaus(true, 5);
 
+#ifdef SHOW_DETAILS
 	screen.outputNL("SPF:");
 	screen.outputNL("FPS:");
 	screen.outputNL("Collision Counter:");
 	screen.outputNL("Number of Objects:");
-
+#endif
 	
 	//Initilize the Circle Template
 	CLS_Circle::initCirc();
 
 	// #### Test object
 	CLS_Circle* newObject;
-	
+	srand(0);	
 	//newObject = new CLS_Circle();
 	////Set the objects attributes
 	//newObject->setLocation(CLS_VectorPoint<float>(300.0f,0.0f));
@@ -117,33 +119,82 @@ void CLS_Simulator::simulationInit(int argc, char **argv) {
 	////Push the object into the vector
 	//objects.push_back(newObject);	
 	//
+
 	//newObject = new CLS_Circle();
 	////Set the objects attributes
-	//newObject->setLocation(CLS_VectorPoint<float>(-300.0f, 0.0f));
-	//newObject->setSpeed(CLS_VectorPoint<float>(40.0f, 0.0f));
-	//newObject->setMass(100.0f);
-	//newObject->setColour(0.0f, 1.0f, 0.0f,1.0f);
+	//newObject->setLocation(glm::vec3(0.0f, 300.0f, 0.0f));
+	//newObject->setSpeed(glm::vec3(0.0f, 0.0f, 0.0f));
+	//newObject->setMass(7.0f);
+	//newObject->setColour(glm::vec4(float(rand() % 255) / 255.0f, float(rand() % 255) / 255.0f, float(rand() % 255) / 255.0f, 1.0f));
 	//newObject->setBounceFactor(-0.001f);
+	//newObject->setScale(20.0f);
 
 
-	////Push the object into the vector
+	//////Push the object into the vector
 	//objects.push_back(newObject);
-	srand(0);
-	for (int i = 0; i < 15; i++)
+
+	for (int i = 0; i < 10; i++)
 	{
 		newObject = new CLS_Circle();
 		//Set the objects attributes
-		newObject->setLocation(glm::vec3(-300.0f + i*40.0f, -300.0f + i*40.0f, 0.0f));
-		newObject->setSpeed(glm::vec3(-2.0f, 0.0f, 0.0f));
-		newObject->setMass(10.0f);
+		newObject->setLocation(glm::vec3(-300.0f + i*40.0f, 350.0f, 0.0f));
+		newObject->setSpeed(glm::vec3(0.0f, 0.0f, 0.0f));
+		newObject->setMass(7.0f + float(i));
 		newObject->setColour(glm::vec4(float(rand() % 255) / 255.0f, float(rand() % 255) / 255.0f, float(rand() % 255) / 255.0f, 1.0f));
-		newObject->setBounceFactor(-0.001f);
-
+		newObject->setBounceFactor(0.4f);
+		newObject->setScale(7.0f + float(i));
 
 		//Push the object into the vector
 		objects.push_back(newObject);
 	}
 	//bool vSync = wglSwapIntervalEXT(1);
+
+	CLS_Line *newLine = new CLS_Line();
+	//Set the objects attributes
+	newLine->setLocation(glm::vec3(0.0f, 200.0f, 0.0f));
+	newLine->setSpeed(glm::vec3(0.0f, 0.0f, 0.0f));
+	newLine->setMass(7.0f);
+	newLine->setColour(glm::vec4(float(rand() % 255) / 255.0f, float(rand() % 255) / 255.0f, float(rand() % 255) / 255.0f, 1.0f));
+	newLine->setBounceFactor(-0.001f);
+	newLine->setScale(1.0f);
+	newLine->setPointOne(-400.0, 50.0, 0.0);
+	newLine->setPointTwo(300.0, -50.0, 0.0);
+	newLine->setMovableStatus(false);
+
+	//Push the object into the vector
+	objects.push_back(newLine);
+
+	newLine = new CLS_Line();
+	//Set the objects attributes
+	newLine->setLocation(glm::vec3(0.0f, 0.0f, 0.0f));
+	newLine->setSpeed(glm::vec3(0.0f, 0.0f, 0.0f));
+	newLine->setMass(7.0f);
+	newLine->setColour(glm::vec4(float(rand() % 255) / 255.0f, float(rand() % 255) / 255.0f, float(rand() % 255) / 255.0f, 1.0f));
+	newLine->setBounceFactor(-0.001f);
+	newLine->setScale(1.0f);
+	newLine->setPointOne(-300, -50.0, 0.0);
+	newLine->setPointTwo(400.0, 50.0, 0.0);
+	newLine->setMovableStatus(false);
+
+	//Push the object into the vector
+	objects.push_back(newLine);
+
+	newLine = new CLS_Line();
+	//Set the objects attributes
+	newLine->setLocation(glm::vec3(0.0f, -200.0f, 0.0f));
+	newLine->setSpeed(glm::vec3(0.0f, 0.0f, 0.0f));
+	newLine->setMass(7.0f);
+	newLine->setColour(glm::vec4(float(rand() % 255) / 255.0f, float(rand() % 255) / 255.0f, float(rand() % 255) / 255.0f, 1.0f));
+	newLine->setBounceFactor(-0.001f);
+	newLine->setScale(1.0f);
+	newLine->setPointOne(-400.0, 50.0, 0.0);
+	newLine->setPointTwo(300.0, -50.0, 0.0);
+	newLine->setMovableStatus(false);
+
+	//Push the object into the vector
+	objects.push_back(newLine);
+
+
 	quit = false;
 }
 
@@ -171,6 +222,7 @@ void CLS_Simulator::mainLoop() {
 				tempTimePoint += timePoints[i];
 			}
 
+#ifdef SHOW_DETAILS
 			ostringstream stream;
 			stream << (CLS_Simulator::elapsedTime() - lastTimePoint)/1000.0f;
 			//stream << (float(tempTimePoint)/float(timePoints.size()))/1000.0f;
@@ -200,17 +252,17 @@ void CLS_Simulator::mainLoop() {
 
 			screen.outputPos(19,4, "             ");
 			screen.outputPos(19,4, stream.str());
-
+#endif
 			timePoints.clear();
 
 		}
 		
-		for(vector<CLS_Shapes*>::iterator i = objects.begin(); i != objects.end(); i++)
+		/*for(vector<CLS_Shapes*>::iterator i = objects.begin(); i != objects.end(); i++)
 		{
 
 			CLS_Physics::applyGravity(CLS_Simulator::elapsedTime() - lastTimePoint,(*i));
 			CLS_Physics::applyObjectMovment(CLS_Simulator::elapsedTime() - lastTimePoint,(*i));
-		}
+		}*/
 
 		CLS_Physics::applyPhysics(CLS_Simulator::elapsedTime() - lastTimePoint, &objects);
 

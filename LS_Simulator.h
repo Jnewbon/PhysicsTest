@@ -10,6 +10,9 @@
 #include "GL\glew\wglew.h"
 
 #include "LS_Shapes.h"
+
+#include "options.h"
+
 #include "LS_Screen.h"
 
 class CLS_Simulator {

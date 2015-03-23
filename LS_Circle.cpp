@@ -66,9 +66,6 @@ CLS_Circle::CLS_Circle(void)
 	this->setModelVAO(this->circleTemplateVAO);
 	this->setScale(20.0f);
 
-	//Width of the circle is -1.0f to 1.0f which is 2.0f. Wdht and height is the same
-	this->setCollisionBox(glm::vec3(2.0f * this->getScale(), 2.0f * this->getScale(), 2.0f * this->getScale()));
-
 	this->setBounceFactor(0.1);
 }
 

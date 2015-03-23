@@ -54,8 +54,11 @@
     <ClCompile Include="LS_Screen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Resources\shader_setup.cpp">
-      <Filter>Resource Files</Filter>
+    <ClCompile Include="shader_setup.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CLS_Line.cpp">
+      <Filter>Source Files\Shapes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -83,8 +86,14 @@
     <ClInclude Include="LS_VectorPoint.h">
       <Filter>Header Files\Math</Filter>
     </ClInclude>
-    <ClInclude Include="Resources\shader_setup.h">
+    <ClInclude Include="options.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shader_setup.h">
       <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CLS_Line.h">
+      <Filter>Header Files\Shapes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

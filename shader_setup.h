@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "options.h"
 #include "GL\glew\glew.h"
 #include <string>
 

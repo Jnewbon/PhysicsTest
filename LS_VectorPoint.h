@@ -1,4 +1,7 @@
 #pragma once
+
+#include "options.h"
+
 template <typename T>
 struct spacialPoint
 {

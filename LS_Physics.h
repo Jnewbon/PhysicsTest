@@ -1,7 +1,11 @@
 #if !defined(_CLS_PHYSICS_H)
 #define _CLS_PHYSICS_H
 
+
+#include "options.h"
 #include "LS_Shapes.h"
+#include "LS_Circle.h"
+#include "CLS_Line.h"
 #include "LS_VectorPoint.h"
 #include <vector>
 #include <list>
@@ -35,6 +39,10 @@ public:
 	static void CCDStaus(bool, unsigned int);
 
 	static bool collision_Manhattan_Dist(CLS_Shapes*, CLS_Shapes*);
+
+	static bool collision_Manhattan_Dist(CLS_Circle*, CLS_Circle*);
+	static bool collision_Manhattan_Dist(CLS_Circle*, CLS_Line*);
+
 	static bool collision_Euclidian_Dist(CLS_Shapes*, CLS_Shapes*);
 	static bool collision_will_collide(CLS_Shapes*, CLS_Shapes*);
 
@@ -43,15 +51,19 @@ public:
 	static void applyGravity(long long elapsedTime, CLS_Shapes* object);
 	static void applyObjectMovment(long long elapsedTime,CLS_Shapes* object);
 
-	static void CCD_ColliosnLoop(CLS_Shapes*, CLS_Shapes*);
+	static void CCD_ColliosnLoop(long long elapsedTime, CLS_Shapes*, CLS_Shapes*);
 	
 	static void math_Apply_Collision_Momentum(CLS_Shapes*, CLS_Shapes*);
-	template <typename T>
-	static float math_Euclidian_Dist(CLS_VectorPoint<T>, CLS_VectorPoint<T>);
-	template <typename T>
-	static float math_Manhattan_Dist(CLS_VectorPoint<T>, CLS_VectorPoint<T>);
+
+	static void math_Apply_Collision_Momentum(CLS_Circle*, CLS_Circle*);
+	static void math_Apply_Collision_Momentum(CLS_Circle*, CLS_Line*);
+
+
+	static float math_Euclidian_Dist(glm::vec3, glm::vec3);
+	static float math_Manhattan_Dist(glm::vec3, glm::vec3);
 
 
 };
 
 #endif  //_CLS_PHYSICS_H
+

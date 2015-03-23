@@ -1,4 +1,9 @@
 #include "LS_Physics.h"
+#include "glm\glm.hpp"
+#include "glm\gtx\scalar_multiplication.hpp"
+#include "glm\gtx\vector_angle.hpp"
+
+#include <iostream>
 
 #include <vector>
 
@@ -8,9 +13,9 @@ CLS_VectorPoint<float> CLS_Physics::viewSize = CLS_VectorPoint<float>(0,0);
 
 //For the moment the resistance of air and ground can be done by simple math higher the number the more resistance the object encounters when moving
 float CLS_Physics::RESISTANCE_AIR = 0.0f;
-float CLS_Physics::RESISTANCE_GROUND = 0.0f;
+float CLS_Physics::RESISTANCE_GROUND = 0.0;
 
-float CLS_Physics::ACCELARATION = -9.81f;
+float CLS_Physics::ACCELARATION = -30.81f;
 float CLS_Physics::MATH_PI = 3.14159265f;
 bool CLS_Physics::destroyOffScreen = true; //This will destory offscreen objects.
 bool CLS_Physics::PHYSICS_CCD = false; //If The CCD system is active or not
@@ -37,11 +42,10 @@ bool CLS_Physics::collision_Manhattan_Dist(CLS_Shapes* obj1, CLS_Shapes* obj2)
 	Once this function determins that there is a collision a more complex calculation 
 	can take place to more accuratly determine if the two object have collided
 
-	/*
-	/*Rather then checking if there is overlap.
-	//We will check if there is no overlap. 
-	//as most object wont be colliding as soon as a condition thatv makes it immposible 
-	//to collide is found the fuction will return false
+	Rather then checking if there is overlap.
+	We will check if there is no overlap. 
+	as most object wont be colliding as soon as a condition thatv makes it immposible 
+	to collide is found the fuction will return false
 	useing 4 conditions
 	Cond1.  If A's left edge is to the right of the B's right edge,
            -  then A is Totally to right Of B
@@ -56,29 +60,125 @@ bool CLS_Physics::collision_Manhattan_Dist(CLS_Shapes* obj1, CLS_Shapes* obj2)
 		   else they are
 */
 	
-	if ((obj1->getLocation().x - obj1->getCollisionBox().x/2) > 
-		(obj2->getLocation().x + obj2->getCollisionBox().x/2))
+	//Seperate the diffrent object out
+	//
+	//#### Circle to Circle ####
+	//
+	if (obj1->getType() == CLS_Shapes::CIRCLE && obj2->getType() == CLS_Shapes::CIRCLE)
+		return CLS_Physics::collision_Manhattan_Dist((CLS_Circle*)obj1, (CLS_Circle*)obj2);
+
+	//
+	//#### Circle to Line ####
+	//
+	else if (
+		(obj1->getType() == CLS_Shapes::LINE && obj2->getType() == CLS_Shapes::CIRCLE) ||
+		(obj1->getType() == CLS_Shapes::CIRCLE && obj2->getType() == CLS_Shapes::LINE))
+	{
+		if (obj1->getType() == CLS_Shapes::LINE)
+			return CLS_Physics::collision_Manhattan_Dist((CLS_Circle*)obj2, (CLS_Line*)obj1);
+		else
+			return CLS_Physics::collision_Manhattan_Dist((CLS_Circle*)obj1, (CLS_Line*)obj2);
+	}
+
+
+
+}
+
+bool CLS_Physics::collision_Manhattan_Dist(CLS_Circle* obj1, CLS_Circle* obj2)
+{
+	if ((obj1->getLocation().x - obj1->getScale()) >
+		(obj2->getLocation().x + obj2->getScale()))
 		//Cond1 = true No overlap
 		return false;
-	
-	if ((obj1->getLocation().x + obj1->getCollisionBox().x/2) < 
-		(obj2->getLocation().x - obj2->getCollisionBox().x/2))
+
+	if ((obj1->getLocation().x + obj1->getScale()) <
+		(obj2->getLocation().x - obj2->getScale()))
 		//Cond2 = true No overlap
 		return false;
-	
-	if ((obj1->getLocation().y - obj1->getCollisionBox().y/2) > 
-		(obj2->getLocation().y + obj2->getCollisionBox().y)/2)
+
+	if ((obj1->getLocation().y - obj1->getScale()) >
+		(obj2->getLocation().y + obj2->getScale()))
 		//Cond3 = true No overlap
 		return false;
-	
-	if ((obj1->getLocation().y + obj1->getCollisionBox().y/2) < 
-		(obj2->getLocation().y - obj2->getCollisionBox().y/2))
+
+	if ((obj1->getLocation().y + obj1->getScale()) <
+		(obj2->getLocation().y - obj2->getScale()))
 		//Cond4 = true No overlap
 		return false;
 
 	//If none of the conditions are true then the object is colliding
 
 	return true;
+}
+
+bool CLS_Physics::collision_Manhattan_Dist(CLS_Circle* circ, CLS_Line* line)
+{
+
+	//Source: http://paulbourke.net/geometry/pointlineplane/
+
+	glm::vec3 lineStart = line->getLocation() + line->getPointOne();
+	glm::vec3 lineEnd = line->getLocation() + line->getPointTwo();
+
+	glm::vec3 toCircle = lineStart - circ->getLocation();
+	glm::vec3 lineDirection = lineEnd - lineStart;
+
+
+	glm::vec3 P1 = lineStart;
+	glm::vec3 P2 = lineEnd;
+	glm::vec3 P3 = circ->getLocation();
+
+
+	float u = ((P3.x - P1.x)*(P2.x - P1.x) + (P3.y - P1.y)*(P2.y - P1.y)) / (glm::length(P2 - P1) * glm::length(P2 - P1));
+	//std::cout << "\n" << u;
+	if (u <= 0.0f)
+		//The center of the circle is closest to the Start of the line
+		return CLS_Physics::math_Euclidian_Dist(P1, P3) < circ->getScale();
+
+	else if (u >= 1.0f)
+		//The center of the circle is closer to the End of the line
+		return CLS_Physics::math_Euclidian_Dist(P2, P3) < circ->getScale();
+
+	else
+	{
+		glm::vec3 P4(P1.x + (u*(P2.x - P1.x)), P1.y + (u*(P2.y - P1.y)),0.0f);
+		return CLS_Physics::math_Euclidian_Dist(P4, P3) < circ->getScale();
+	}
+
+
+
+	//float PlatformLength = glm::length(lineDirection);
+	//float radius = circ->getScale();
+
+
+
+
+	//if (projected <= 0)
+	//{
+
+	//	// The blob is nearest to the start point
+	//	if (glm::length(toCircle) < radius)
+	//	{
+	//		return true;
+	//	}
+	//	else if (projected >= PlatformLength * PlatformLength)
+	//	{
+	//		// The blob is nearest to the end point
+	//		toCircle = circ->getLocation() - lineEnd;
+	//		if (glm::length(toCircle) < radius)
+	//		{
+	//			return true;
+	//		}
+	//	}
+	//	else
+	//	{
+	//		// the blob is nearest to the middle.
+	//		float distanceToPlatform = glm::length(toCircle) - projected / PlatformLength;
+	//		if (distanceToPlatform < radius)
+	//		{
+	//			return true;
+	//		}
+	//	}
+	//}
 
 }
 
@@ -150,20 +250,31 @@ void CLS_Physics::applyPhysics(long long elapsedTime, std::vector<CLS_Shapes*> *
 	if (objects == nullptr)
 		return;
 
+	//reset the iscolliding flag to clear any collions that may have bee resolved since
+	/*for (std::vector<CLS_Shapes*>::iterator i = objects->begin(); i != objects->end(); i++)
+		(*i)->setIscolliding(false);*/
+
 	for (std::vector<CLS_Shapes*>::iterator i = objects->begin(); i != objects->end(); i++)
 	{
 		for(std::vector<CLS_Shapes*>::iterator j = i+1; j != objects->end(); j++)
 		{
+			//Continuous Collision Detection is enabled
 			if (CLS_Physics::PHYSICS_CCD)
 			{
-				CLS_Physics::CCD_ColliosnLoop((*i), (*j));
+				CLS_Physics::CCD_ColliosnLoop(elapsedTime, (*i), (*j));
 			}
 			else
 			{
 				//Check for approx collision/Fast collision algorithm
 				if (CLS_Physics::collision_Manhattan_Dist((*i), (*j)))
 				{
-					if (CLS_Physics::collision_Euclidian_Dist((*i), (*j)))
+					if (((*i)->getType() == CLS_Shapes::LINE && (*j)->getType() == CLS_Shapes::CIRCLE) ||
+						((*i)->getType() == CLS_Shapes::CIRCLE && (*j)->getType() == CLS_Shapes::LINE))
+					{
+
+						CLS_Physics::math_Apply_Collision_Momentum((*i), (*j));
+					}
+					else if (CLS_Physics::collision_Euclidian_Dist((*i), (*j)))
 					{
 						CLS_Physics::math_Apply_Collision_Momentum((*i), (*j));
 
@@ -172,10 +283,25 @@ void CLS_Physics::applyPhysics(long long elapsedTime, std::vector<CLS_Shapes*> *
 			}
 		}
 	}
+	//the CCD applies the object movement while detecting collision so moving the movment
+	// to handle that here if the CCD is not active then apply the movment here
+	for (std::vector<CLS_Shapes*>::iterator i = objects->begin(); i != objects->end(); i++)
+	{
+		//if (!CLS_Physics::PHYSICS_CCD)
+			CLS_Physics::applyObjectMovment(elapsedTime, (*i));
+
+		//Apply gravity anyway as thats not applied to everything during the CDD
+		CLS_Physics::applyGravity(elapsedTime, (*i));
+	}
+
 }
 
 void CLS_Physics::applyGravity(long long elapsedTime, CLS_Shapes* object)
-{
+{	
+	//if the object is immovable skip this object movemnt
+	if (!object->isMovable())
+		return;
+
 	glm::vec3 temp = object->getSpeed();
 
 	temp.y = (temp.y + ((ACCELARATION/1000.0f) * elapsedTime));
@@ -186,6 +312,9 @@ void CLS_Physics::applyGravity(long long elapsedTime, CLS_Shapes* object)
 	
 void CLS_Physics::applyObjectMovment(long long elapsedTime,CLS_Shapes* object)
 {
+	//if the object is immovable skip this object movemnt
+	if (!object->isMovable())
+		return;
 
 	float resistancefactorX, resistancefactorY;
 
@@ -201,7 +330,7 @@ void CLS_Physics::applyObjectMovment(long long elapsedTime,CLS_Shapes* object)
 		resistancefactorY = 1.0f - (CLS_Physics::RESISTANCE_AIR / 1000.0f);
 	}	
 	
-	object->setLocation(object->getLocation() + object->getSpeed());
+	object->setLocation(object->getLocation() + ((object->getSpeed() / 1000.0f) * float(elapsedTime)));
 
 	glm::vec3 temp1, temp2, temp3;
 	temp1 = object->getCollisionBox();
@@ -215,6 +344,8 @@ void CLS_Physics::applyObjectMovment(long long elapsedTime,CLS_Shapes* object)
 	{
 		temp3.y = ((temp3.y * (1.0f - object->getBounceFactor()))* -1);
 		temp2.y = (temp2.y + -(temp2.y - (-(CLS_Physics::viewSize.getY()/2) + (temp1.y/2))));
+
+		object->setRotationalVelocity((-((temp3.x/object->getScale())*(180.0/MATH_PI) / 1000.0f) * float(elapsedTime)));
 
 		//CLS_Physics::collisionCounter++;
 	}
@@ -245,12 +376,14 @@ void CLS_Physics::applyObjectMovment(long long elapsedTime,CLS_Shapes* object)
 	temp3.y = (temp3.y * resistancefactorY);
 	object->setLocation(temp2);
 	object->setSpeed(temp3);
+	object->setRotaion(object->getRotation() + ((object->getRotationalVelociy()/1000) * float(elapsedTime)));
 }
 
-void CLS_Physics::CCD_ColliosnLoop(CLS_Shapes *obj1, CLS_Shapes *obj2)
+void CLS_Physics::CCD_ColliosnLoop(long long elapsedTime, CLS_Shapes *obj1, CLS_Shapes *obj2)
 {
 	//As the detection is done in steps save the original speed of both objects
 
+	
 
 	//And set the speed of the objects to the step amount, The current speed divided by the number of steps to be done
 	obj1->setSpeed((obj1->getSpeed() / float(CLS_Physics::PHYSICS_CCD_ITOR)));
@@ -260,12 +393,15 @@ void CLS_Physics::CCD_ColliosnLoop(CLS_Shapes *obj1, CLS_Shapes *obj2)
 	for (unsigned int i = 0; i < CLS_Physics::PHYSICS_CCD_ITOR; i++)
 	{
 		//Check the manhattan distance first
-		if (CLS_Physics::collision_Manhattan_Dist(obj1, obj2))
+		if (CLS_Physics::collision_Manhattan_Dist(obj1, obj2) && !(obj1->getType() == CLS_Shapes::LINE && obj2->getType() == CLS_Shapes::LINE))
 		{
-			//Then the euclidian
-			if (CLS_Physics::collision_Euclidian_Dist(obj1, obj2))
+
+			
+			//If we are checking a Circle and Line then theres no need to go further then that
+			if ((obj1->getType() == CLS_Shapes::LINE && obj2->getType() == CLS_Shapes::CIRCLE) ||
+				(obj1->getType() == CLS_Shapes::CIRCLE && obj2->getType() == CLS_Shapes::LINE))
 			{
-				//Rest the speed back th there original for the calculations to be accurate
+				//Reset the speed back th there original for the calculations to be accurate
 				obj1->setSpeed((obj1->getSpeed() * float(CLS_Physics::PHYSICS_CCD_ITOR)));
 				obj2->setSpeed((obj2->getSpeed() * float(CLS_Physics::PHYSICS_CCD_ITOR)));
 				CLS_Physics::math_Apply_Collision_Momentum(obj1, obj2);
@@ -273,28 +409,82 @@ void CLS_Physics::CCD_ColliosnLoop(CLS_Shapes *obj1, CLS_Shapes *obj2)
 				obj1->setSpeed((obj1->getSpeed() / float(CLS_Physics::PHYSICS_CCD_ITOR)));
 				obj2->setSpeed((obj2->getSpeed() / float(CLS_Physics::PHYSICS_CCD_ITOR)));
 				//Add whats left of the movment to the 
-				for (i; i < CLS_Physics::PHYSICS_CCD_ITOR; i++)
-				{
-					CLS_Physics::applyObjectMovment(0, obj1);
-					CLS_Physics::applyObjectMovment(0, obj2);
-				}
+				//Best way to add the remaining step of the movment is to times the elapse time by 
+				//the remaining step and apply it to the object via the establised function
+				CLS_Physics::applyObjectMovment(elapsedTime * (CLS_Physics::PHYSICS_CCD_ITOR - i), obj1);
+				CLS_Physics::applyObjectMovment(elapsedTime * (CLS_Physics::PHYSICS_CCD_ITOR - i), obj2);
 				//exit the for loop
+
+				obj1->setIscolliding(true);
+				obj2->setIscolliding(true);
+			}
+
+
+			//Then the euclidian
+			else if (CLS_Physics::collision_Euclidian_Dist(obj1, obj2))
+			{
+				//Reset the speed back th there original for the calculations to be accurate
+				obj1->setSpeed((obj1->getSpeed() * float(CLS_Physics::PHYSICS_CCD_ITOR)));
+				obj2->setSpeed((obj2->getSpeed() * float(CLS_Physics::PHYSICS_CCD_ITOR)));
+				CLS_Physics::math_Apply_Collision_Momentum(obj1, obj2);
+				//If the object has cillided then it wont collide with this object again, Probably
+				obj1->setSpeed((obj1->getSpeed() / float(CLS_Physics::PHYSICS_CCD_ITOR)));
+				obj2->setSpeed((obj2->getSpeed() / float(CLS_Physics::PHYSICS_CCD_ITOR)));
+				//Add whats left of the movment to the 
+				//Best way to add the remaining step of the movment is to times the elapse time by 
+				//the remaining step and apply it to the object via the establised function
+				CLS_Physics::applyObjectMovment(elapsedTime * (CLS_Physics::PHYSICS_CCD_ITOR - i), obj1);
+				CLS_Physics::applyObjectMovment(elapsedTime * (CLS_Physics::PHYSICS_CCD_ITOR - i), obj2);
+				//exit the for loop
+
+				obj1->setIscolliding(true);
+				obj2->setIscolliding(true);
+
 				break;
 			}
 		}
 
 		//Apply the objects movment for the next step
-		CLS_Physics::applyObjectMovment(0, obj1);
-		CLS_Physics::applyObjectMovment(0, obj2);
+		CLS_Physics::applyObjectMovment(elapsedTime, obj1);
+		CLS_Physics::applyObjectMovment(elapsedTime, obj2);
 
 	}
 
-	//Rest the speed back th there original
+	//Reset the speed back th there original
 	obj1->setSpeed((obj1->getSpeed() * float(CLS_Physics::PHYSICS_CCD_ITOR)));
 	obj2->setSpeed((obj2->getSpeed() * float(CLS_Physics::PHYSICS_CCD_ITOR)));
 }
 
 void CLS_Physics::math_Apply_Collision_Momentum(CLS_Shapes* obj1, CLS_Shapes* obj2)
+{
+
+	//Seperate the diffrent object collisions out
+	//
+	//#### Circle to Circle ####
+	//
+	if (obj1->getType() == CLS_Shapes::CIRCLE && obj2->getType() == CLS_Shapes::CIRCLE)
+		CLS_Physics::math_Apply_Collision_Momentum((CLS_Circle*)obj1, (CLS_Circle*)obj2);
+
+	//
+	//#### Circle to Line ####
+	//
+	else if (
+		(obj1->getType() == CLS_Shapes::LINE && obj2->getType() == CLS_Shapes::CIRCLE) ||
+		(obj1->getType() == CLS_Shapes::CIRCLE && obj2->getType() == CLS_Shapes::LINE))
+	{
+		if (obj1->getType() == CLS_Shapes::LINE)
+			CLS_Physics::math_Apply_Collision_Momentum((CLS_Circle*)obj2, (CLS_Line*)obj1);
+		else
+			CLS_Physics::math_Apply_Collision_Momentum((CLS_Circle*)obj1, (CLS_Line*)obj2);
+	}
+
+
+
+
+
+}
+
+void CLS_Physics::math_Apply_Collision_Momentum(CLS_Circle* obj1, CLS_Circle* obj2)
 {
 	float o1X = obj1->getLocation().x;
 	float o1Y = obj1->getLocation().y;
@@ -313,48 +503,106 @@ void CLS_Physics::math_Apply_Collision_Momentum(CLS_Shapes* obj1, CLS_Shapes* ob
 	float nvY = (o1Y - o2Y);
 
 	//Get the Unit Normal
-	float unX = nvX / sqrt( pow( nvX , 2) + pow( nvY , 2));
-	float unY = nvY / sqrt( pow( nvX , 2) + pow( nvY , 2));
+	float unX = nvX / sqrt(pow(nvX, 2) + pow(nvY, 2));
+	float unY = nvY / sqrt(pow(nvX, 2) + pow(nvY, 2));
 
 	//Get the Unit Tangent
 	float utX = -unY;
 	float utY = unX;
 
 	//Work out the scalers
-	float v1un = ( o1XS * unX ) + ( o1YS * unY );
-	float v1ut = ( o1XS * utX ) + ( o1YS * utY );
-	float v2un = ( o2XS * unX ) + ( o2YS * unY );
-	float v2ut = ( o2XS * utX ) + ( o2YS * utY );
+	float v1un = (o1XS * unX) + (o1YS * unY);
+	float v1ut = (o1XS * utX) + (o1YS * utY);
+	float v2un = (o2XS * unX) + (o2YS * unY);
+	float v2ut = (o2XS * utX) + (o2YS * utY);
 
 	//Work out Directionlees speed
-	float v1fv = ((v1un * (o1M - o2M)) + ( 2 * o2M * v2un)) / (o1M + o2M);
-	float v2fv = ((v2un * (o2M - o1M)) + ( 2 * o1M * v1un)) / (o1M + o2M);
+	float v1fv = ((v1un * (o1M - o2M)) + (2 * o2M * v2un)) / (o1M + o2M);
+	float v2fv = ((v2un * (o2M - o1M)) + (2 * o1M * v1un)) / (o1M + o2M);
 
 	//work out Change in x/ Change in Y
 	glm::vec3 fv1;
-	fv1.x = ((v1fv * unX) + ( v1ut * utX ));
-	fv1.y = ((v1fv * unY) + ( v1ut * utY ));
+	fv1.x = ((v1fv * unX) + (v1ut * utX));
+	fv1.y = ((v1fv * unY) + (v1ut * utY));
 
 	glm::vec3 fv2;
-	fv2.x = ((v2fv * unX) + ( v2ut * utX ));
-	fv2.y = ((v2fv * unY) + ( v2ut * utY ));
+	fv2.x = ((v2fv * unX) + (v2ut * utX));
+	fv2.y = ((v2fv * unY) + (v2ut * utY));
 
 	//Finally set the new vectoer of both objects
-	obj1->setSpeed(fv1);
-	obj2->setSpeed(fv2);
+	if (obj1->isMovable())
+		obj1->setSpeed(fv1);
+	if (obj2->isMovable())
+		obj2->setSpeed(fv2);
 	CLS_Physics::collisionCounter++;
 
 
 }
 
-template <typename T>
-float CLS_Physics::math_Euclidian_Dist(CLS_VectorPoint<T>, CLS_VectorPoint<T>)
+void CLS_Physics::math_Apply_Collision_Momentum(CLS_Circle* circ, CLS_Line* line)
 {
-	return 0.0f;
+	glm::vec3 lineStart = line->getLocation() + line->getPointOne();
+	glm::vec3 lineEnd = line->getLocation() + line->getPointTwo();
+
+	glm::vec3 toCircle = lineStart - circ->getLocation();
+	glm::vec3 lineDirection = lineEnd - lineStart;
+
+
+	glm::vec3 P1 = lineStart;
+	glm::vec3 P2 = lineEnd;
+	glm::vec3 P3 = circ->getLocation();
+
+
+	float u = ((P3.x - P1.x)*(P2.x - P1.x) + (P3.y - P1.y)*(P2.y - P1.y)) / (glm::length(P2 - P1) * glm::length(P2 - P1));
+	
+	
+	CLS_Circle colisionPoint;
+	colisionPoint.setSpeed(glm::vec3(0.0f, 0.0f, 0.0f));
+	colisionPoint.setMovableStatus(false);
+	colisionPoint.setMass(200.0f);
+	colisionPoint.setScale(0.0f);
+
+	if (u <= 0.0f)
+	{	//The center of the circle is closest to the Start of the line
+		//Use the circular collison for the ends of the lines
+		colisionPoint.setLocation(lineStart);
+	}
+
+	else if (u >= 1.0f)
+	{	//The center of the circle is closer to the End of the line
+		//Use the circular collison for the ends of the lines
+		colisionPoint.setLocation(lineEnd);
+	}
+
+	else
+	{
+
+		glm::vec3 P4(P1.x + (u*(P2.x - P1.x)), P1.y + (u*(P2.y - P1.y)), 0.0f);
+		
+		//using the point of contact and the balls location move the ball out to the exact size of the ball raidius
+		//This should prevent multiple colisions
+		circ->setLocation(P4 - ((P4 - P3) / glm::length(P4 - P3)) * circ->getScale());
+
+		
+		//in real physics, the rotaion of the object 'should' affect the resultant resolution angle. but ill just let that slide for now. 
+		float angle = glm::orientedAngle(glm::normalize(lineDirection), glm::normalize(circ->getSpeed()), glm::vec3(0.0f, 1.0f, 0.0f));
+		angle -= MATH_PI / 2.0f;
+
+		circ->setRotationalVelocity((angle) / circ->getScale());
+		circ->setSpeed(glm::reflect(circ->getSpeed(), glm::normalize(P4 - P3)));
+
+		return;
+	}
+
+
+	CLS_Physics::math_Apply_Collision_Momentum(&colisionPoint, circ);
+	circ->setLocation(colisionPoint.getLocation() - ((colisionPoint.getLocation() - P3) / glm::length(colisionPoint.getLocation() - P3)) * circ->getScale());
+
 }
 
-template <typename T>
-float CLS_Physics::math_Manhattan_Dist(CLS_VectorPoint<T>, CLS_VectorPoint<T>)
+
+float CLS_Physics::math_Euclidian_Dist(glm::vec3 p1, glm::vec3 p2)
 {
-	return 0.0f;
+	return glm::length(p1-p2);
 }
+
