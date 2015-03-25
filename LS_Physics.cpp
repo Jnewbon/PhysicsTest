@@ -15,7 +15,7 @@ CLS_VectorPoint<float> CLS_Physics::viewSize = CLS_VectorPoint<float>(0,0);
 float CLS_Physics::RESISTANCE_AIR = 0.0f;
 float CLS_Physics::RESISTANCE_GROUND = 0.0;
 
-float CLS_Physics::ACCELARATION = -30.81f;
+float CLS_Physics::ACCELARATION = -120.81f;
 float CLS_Physics::MATH_PI = 3.14159265f;
 bool CLS_Physics::destroyOffScreen = true; //This will destory offscreen objects.
 bool CLS_Physics::PHYSICS_CCD = false; //If The CCD system is active or not
@@ -246,21 +246,21 @@ bool CLS_Physics::collision_will_collide(CLS_Shapes* obj1, CLS_Shapes* obj2)
 //Main Physics Entry point
 void CLS_Physics::applyPhysics(long long elapsedTime, std::vector<CLS_Shapes*> *objects)
 {
-
+	//Make sure there are objects to apply physics to
 	if (objects == nullptr)
 		return;
 
-	//reset the iscolliding flag to clear any collions that may have bee resolved since
-	/*for (std::vector<CLS_Shapes*>::iterator i = objects->begin(); i != objects->end(); i++)
-		(*i)->setIscolliding(false);*/
 
+	//Start looping through the objects
 	for (std::vector<CLS_Shapes*>::iterator i = objects->begin(); i != objects->end(); i++)
 	{
+		//Start the next loop to the priviouse one plus 1, This will make sure no two onjects and screwtinized more then once
 		for(std::vector<CLS_Shapes*>::iterator j = i+1; j != objects->end(); j++)
 		{
 			//Continuous Collision Detection is enabled
 			if (CLS_Physics::PHYSICS_CCD)
 			{
+				//go the the CCD collision loop
 				CLS_Physics::CCD_ColliosnLoop(elapsedTime, (*i), (*j));
 			}
 			else
@@ -268,12 +268,16 @@ void CLS_Physics::applyPhysics(long long elapsedTime, std::vector<CLS_Shapes*> *
 				//Check for approx collision/Fast collision algorithm
 				if (CLS_Physics::collision_Manhattan_Dist((*i), (*j)))
 				{
+
+					//As circle to line colliosn only has the advaced detection algortim currently only one test needs to be done
+					//So apply the momentum to the objects
 					if (((*i)->getType() == CLS_Shapes::LINE && (*j)->getType() == CLS_Shapes::CIRCLE) ||
 						((*i)->getType() == CLS_Shapes::CIRCLE && (*j)->getType() == CLS_Shapes::LINE))
 					{
 
 						CLS_Physics::math_Apply_Collision_Momentum((*i), (*j));
 					}
+					//Circle to circle has two algoritms, a basic and advanced, apply the advanced version now
 					else if (CLS_Physics::collision_Euclidian_Dist((*i), (*j)))
 					{
 						CLS_Physics::math_Apply_Collision_Momentum((*i), (*j));
@@ -283,12 +287,13 @@ void CLS_Physics::applyPhysics(long long elapsedTime, std::vector<CLS_Shapes*> *
 			}
 		}
 	}
-	//the CCD applies the object movement while detecting collision so moving the movment
-	// to handle that here if the CCD is not active then apply the movment here
+
+	//Apply the object movment and gravity
+
 	for (std::vector<CLS_Shapes*>::iterator i = objects->begin(); i != objects->end(); i++)
 	{
 		//if (!CLS_Physics::PHYSICS_CCD)
-			CLS_Physics::applyObjectMovment(elapsedTime, (*i));
+		CLS_Physics::applyObjectMovment(elapsedTime, (*i));
 
 		//Apply gravity anyway as thats not applied to everything during the CDD
 		CLS_Physics::applyGravity(elapsedTime, (*i));
@@ -318,7 +323,7 @@ void CLS_Physics::applyObjectMovment(long long elapsedTime,CLS_Shapes* object)
 
 	float resistancefactorX, resistancefactorY;
 
-
+	//Set the resistances for the ground and air in an x/y plane, (ground resistance currney only works for object on a constant y plane/flat line)
 	if (object->getSpeed().x <= 0.01f && object->getSpeed().x >= -0.01f)
 	{
 		resistancefactorX = 1.0f - (CLS_Physics::RESISTANCE_GROUND / 1000.0f);
@@ -330,8 +335,10 @@ void CLS_Physics::applyObjectMovment(long long elapsedTime,CLS_Shapes* object)
 		resistancefactorY = 1.0f - (CLS_Physics::RESISTANCE_AIR / 1000.0f);
 	}	
 	
+	//Move the object
 	object->setLocation(object->getLocation() + ((object->getSpeed() / 1000.0f) * float(elapsedTime)));
 
+	//Time to make sure the object is within the boundrys of the screen
 	glm::vec3 temp1, temp2, temp3;
 	temp1 = object->getCollisionBox();
 	temp2 = object->getLocation();
@@ -339,43 +346,61 @@ void CLS_Physics::applyObjectMovment(long long elapsedTime,CLS_Shapes* object)
 
 
 
-
-	if (temp2.y < -(CLS_Physics::viewSize.getY()/2) + (temp1.y/2) && temp3.y < 0.0f)
+	//Make sure the object is above the bottom of the screen
+	if (temp2.y < -(CLS_Physics::viewSize.getY()/2) + (temp1.y/2) && temp3.y <= 0.0f)
 	{
-		temp3.y = ((temp3.y * (1.0f - object->getBounceFactor()))* -1);
+		//if not snap to the bottom of the screen and reverse the y speed
+
+		if (temp3.y > -0.1f)
+			temp3.y = 0.0f;
+
+		temp3.y = -((temp3.y * object->getBounceFactor()));
 		temp2.y = (temp2.y + -(temp2.y - (-(CLS_Physics::viewSize.getY()/2) + (temp1.y/2))));
+
+		if ((-((temp3.x / object->getScale())*(180.0 / MATH_PI) / 1000.0f) * float(elapsedTime)) < -1.0f)
+			temp3.y = temp3.y;
 
 		object->setRotationalVelocity((-((temp3.x/object->getScale())*(180.0/MATH_PI) / 1000.0f) * float(elapsedTime)));
 
 		//CLS_Physics::collisionCounter++;
 	}
+	//Make sure the object is below of the screen
 	else if (temp2.y > (CLS_Physics::viewSize.getY()/2) - (temp1.y/2))
 	{
-		temp3.y = ((temp3.y * (1.0f - object->getBounceFactor())) * -1);
+		//if not snap to the top of the screen and reverse the y speed
+		temp3.y = -((temp3.y * object->getBounceFactor()));
 		temp2.y = (temp2.y - (temp2.y - ((CLS_Physics::viewSize.getY()/2) - (temp1.y/2))));
 
 		//CLS_Physics::collisionCounter++;
 	}
+	//Make sure the object is to the right of the left of the screen
 	if (temp2.x < -(CLS_Physics::viewSize.getX()/2) + (temp1.x/2))
 	{
-			
-		temp3.x = ((temp3.x * (1.0f - object->getBounceFactor()))* -1 );
+
+		//if not snap to the left  of the screen and reverse the x speed
+		temp3.x = -((temp3.x * object->getBounceFactor()) );
 		temp2.x = (temp2.x + ( (((CLS_Physics::viewSize.getX()/2)*-1) + (temp1.x/2)) - temp2.x ));
 		//CLS_Physics::collisionCounter++;
 	}
+	//Make sure the object is to the left of the right of the screen
 	else if(temp2.x > (CLS_Physics::viewSize.getX()/2) - (temp1.x/2))
 	{
+		//if not snap to the right  of the screen and reverse the x speed
 		
-		temp3.x = ((temp3.x * (1.0f - object->getBounceFactor())) * -1);
+		temp3.x = -((temp3.x * object->getBounceFactor()));
 		temp2.x = (temp2.x - (temp2.x - ((CLS_Physics::viewSize.getX()/2) - (temp1.x/2))));
 
 		//CLS_Physics::collisionCounter++;
 	}
 	
+
+	//factor in the Resistances calculated eariler and apply the new location and speed to the objects
 	temp3.x = (temp3.x * resistancefactorX);
 	temp3.y = (temp3.y * resistancefactorY);
 	object->setLocation(temp2);
 	object->setSpeed(temp3);
+
+	//Also rotate the object using the roational velocity
 	object->setRotaion(object->getRotation() + ((object->getRotationalVelociy()/1000) * float(elapsedTime)));
 }
 
@@ -498,6 +523,7 @@ void CLS_Physics::math_Apply_Collision_Momentum(CLS_Circle* obj1, CLS_Circle* ob
 	float o2YS = obj2->getSpeed().y;
 	float o2M = obj2->getMass();
 
+
 	//Get the normal Vector
 	float nvX = (o1X - o2X);
 	float nvY = (o1Y - o2Y);
@@ -531,11 +557,19 @@ void CLS_Physics::math_Apply_Collision_Momentum(CLS_Circle* obj1, CLS_Circle* ob
 
 	//Finally set the new vectoer of both objects
 	if (obj1->isMovable())
-		obj1->setSpeed(fv1);
+		obj1->setSpeed(fv1 * obj1->getBounceFactor());
 	if (obj2->isMovable())
-		obj2->setSpeed(fv2);
+		obj2->setSpeed(fv2 * obj2->getBounceFactor());
 	CLS_Physics::collisionCounter++;
 
+
+	//This will snapp the circle to a point where they are exactally colliding preventing any of the balls merging into each other
+	if (math_Euclidian_Dist(obj1->getLocation(), obj2->getLocation()) < obj1->getScale() + obj2->getScale())
+	{
+
+		obj1->setLocation(obj1->getLocation() - (((obj2->getLocation() - obj1->getLocation()) / (obj1->getScale() + obj2->getScale()))));
+		obj2->setLocation(obj2->getLocation() - (((obj1->getLocation() - obj2->getLocation()) / (obj1->getScale() + obj2->getScale()))));
+	}
 
 }
 
@@ -553,6 +587,10 @@ void CLS_Physics::math_Apply_Collision_Momentum(CLS_Circle* circ, CLS_Line* line
 	glm::vec3 P3 = circ->getLocation();
 
 
+	//This calculates at a 0-1 basis where the center of the ball is along the line tangant. 
+	//for example 0.5 means the the center of the circle is at a tangent to the middle of the line.
+	//Values of less the 0.0 and above 1.0 meant the center of the circle is not within the boundries of the line and collision should be tested bases on the distance from either
+	//the start of the line or the end of the line base on if the value is above 1 or below 0.
 	float u = ((P3.x - P1.x)*(P2.x - P1.x) + (P3.y - P1.y)*(P2.y - P1.y)) / (glm::length(P2 - P1) * glm::length(P2 - P1));
 	
 	
@@ -577,29 +615,45 @@ void CLS_Physics::math_Apply_Collision_Momentum(CLS_Circle* circ, CLS_Line* line
 	else
 	{
 
+		//This get the coordinates on the line that the circle had collidied with (contact point)
 		glm::vec3 P4(P1.x + (u*(P2.x - P1.x)), P1.y + (u*(P2.y - P1.y)), 0.0f);
 		
-		//using the point of contact and the balls location move the ball out to the exact size of the ball raidius
-		//This should prevent multiple colisions
+		//This snapes the ball to the exact point the ball would have contacted the line eliminating all penetration
 		circ->setLocation(P4 - ((P4 - P3) / glm::length(P4 - P3)) * circ->getScale());
 
 		
 		//in real physics, the rotaion of the object 'should' affect the resultant resolution angle. but ill just let that slide for now. 
+		//Game physics is all about the apprent view of being realistic, and this is realistic 'enough'
 		float angle = glm::orientedAngle(glm::normalize(lineDirection), glm::normalize(circ->getSpeed()), glm::vec3(0.0f, 1.0f, 0.0f));
 		angle -= MATH_PI / 2.0f;
 
+		//Set the rotational speed and velocities
+		
+
+		//This should stop a ball infinatly bouncing when the ball almost coemes to rest
+		glm::vec3 newSpeed = glm::reflect(circ->getSpeed(), glm::normalize(P4 - P3)) * circ->getBounceFactor();
+
+		if (glm::length(newSpeed) < 2.0)
+		{
+			newSpeed = glm::vec3(0.0f, 0.0f, 0.0f);
+			angle = 0.0f;
+		}
+
 		circ->setRotationalVelocity((angle) / circ->getScale());
-		circ->setSpeed(glm::reflect(circ->getSpeed(), glm::normalize(P4 - P3)));
+		circ->setSpeed(newSpeed);
 
 		return;
 	}
 
-
+	//if the circle has cllided with the ends of the line then apply circle on circle collision  using the object created
 	CLS_Physics::math_Apply_Collision_Momentum(&colisionPoint, circ);
+
+
+	//using the point of contact and the balls location move the ball out to the exact size of the ball raidius
+	//This should prevent multiple colisions
 	circ->setLocation(colisionPoint.getLocation() - ((colisionPoint.getLocation() - P3) / glm::length(colisionPoint.getLocation() - P3)) * circ->getScale());
 
 }
-
 
 float CLS_Physics::math_Euclidian_Dist(glm::vec3 p1, glm::vec3 p2)
 {

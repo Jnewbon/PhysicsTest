@@ -12,7 +12,7 @@
 #define GLEW_STATIC 1
 
 //This will tell the program to output detals of the FPS and Objects to the screen
-//#define SHOW_DETAILS
+#define SHOW_DETAILS
 
 //This is for memory leak detection
 #ifdef _DEBUG 

@@ -28,6 +28,7 @@ private:
 	static std::vector<CLS_Shapes*> objects;
 	static long long lastTimePoint;
 	static std::vector<float> timePoints;
+	static CLS_Shapes *tempObject;
 #ifdef GLUseShader
 		static GLuint shaderProgram;
 #endif // GLUseShader
@@ -40,6 +41,7 @@ private:
 	static void keyHandler(unsigned char, int, int);
 	static void specialKeyHandler(int, int, int);
 	static void activeMouseHandler(int, int);
+	static void mouseFunc(int, int, int, int);
 
 	static long long elapsedTime();
 };
