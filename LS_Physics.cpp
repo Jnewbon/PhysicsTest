@@ -80,7 +80,7 @@ bool CLS_Physics::collision_Manhattan_Dist(CLS_Shapes* obj1, CLS_Shapes* obj2)
 			return CLS_Physics::collision_Manhattan_Dist((CLS_Circle*)obj1, (CLS_Line*)obj2);
 	}
 
-
+	return false;
 
 }
 
