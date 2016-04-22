@@ -14,21 +14,26 @@
     <ClCompile Include="CLS_Line.cpp" />
     <ClCompile Include="LS_Circle.cpp" />
     <ClCompile Include="LS_ConsoleInterface.cpp" />
+    <ClCompile Include="LS_Factory.cpp" />
     <ClCompile Include="LS_Physics.cpp" />
     <ClCompile Include="LS_Screen.cpp" />
     <ClCompile Include="LS_Shapes.cpp" />
     <ClCompile Include="LS_Simulator.cpp" />
+    <ClCompile Include="LS_Simulator3D.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="shader_setup.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CLS_Line.h" />
+    <ClInclude Include="error.h" />
     <ClInclude Include="LS_Circle.h" />
     <ClInclude Include="LS_ConsoleInterface.h" />
+    <ClInclude Include="LS_Factory.h" />
     <ClInclude Include="LS_Physics.h" />
     <ClInclude Include="LS_Screen.h" />
     <ClInclude Include="LS_Shapes.h" />
     <ClInclude Include="LS_Simulator.h" />
+    <ClInclude Include="LS_Simulator3D.h" />
     <ClInclude Include="LS_VAO_Setup.h" />
     <ClInclude Include="LS_VectorPoint.h" />
     <ClInclude Include="options.h" />
@@ -86,7 +91,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>lib/freeglut.lib;lib/glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lib/freeglut.lib;lib/glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

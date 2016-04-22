@@ -94,7 +94,7 @@ void CLS_Simulator::simulationInit(int argc, char **argv) {
 
 	CLS_Physics::setScreenSize(CLS_VectorPoint<float>(SCREEN_X,SCREEN_Y));
 	//Non CCD is currently broken. (Circ - Circ, Circ - line Works, and the speed of all objects is slowed)
-	CLS_Physics::CCDStaus(true, 10);
+	CLS_Physics::CCDStaus(true, 5);
 
 #ifdef SHOW_DETAILS
 	screen.outputNL("SPF:");

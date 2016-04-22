@@ -5,6 +5,4 @@ ConsoleApplication1.v12.suo
 ConsoleApplication1.v11.suo
 /Debug/*
 /Release/*
-!freeglut.dll
-!glew32.dll
 ConsoleApplication1.VC.db

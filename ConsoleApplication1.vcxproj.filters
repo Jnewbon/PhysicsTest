@@ -31,6 +31,12 @@
     <Filter Include="Source Files\Math">
       <UniqueIdentifier>{f3ec9792-47af-427f-a6a0-9c9bf122b812}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Factory">
+      <UniqueIdentifier>{85bf7950-775b-4636-b2b7-6685a3b6dcf3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Factory">
+      <UniqueIdentifier>{b6711783-224e-4a77-bc19-240807d75f49}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LS_ConsoleInterface.cpp">
@@ -59,6 +65,12 @@
     </ClCompile>
     <ClCompile Include="CLS_Line.cpp">
       <Filter>Source Files\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="LS_Factory.cpp">
+      <Filter>Source Files\Factory</Filter>
+    </ClCompile>
+    <ClCompile Include="LS_Simulator3D.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -94,6 +106,15 @@
     </ClInclude>
     <ClInclude Include="CLS_Line.h">
       <Filter>Header Files\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="LS_Factory.h">
+      <Filter>Header Files\Factory</Filter>
+    </ClInclude>
+    <ClInclude Include="error.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LS_Simulator3D.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
