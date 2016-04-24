@@ -303,6 +303,11 @@ void CLS_Simulator::display() {
 	glutSwapBuffers();
 }
 
+void CLS_Simulator::resizeDisplay(int, int)
+{
+	display();
+}
+
 void CLS_Simulator::keyHandler(unsigned char key, int x, int y)
 {
 	if (key = 'q')

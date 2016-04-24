@@ -110,9 +110,6 @@
     <ClInclude Include="LS_Factory.h">
       <Filter>Header Files\Factory</Filter>
     </ClInclude>
-    <ClInclude Include="error.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="LS_Simulator3D.h">
       <Filter>Header Files</Filter>
     </ClInclude>

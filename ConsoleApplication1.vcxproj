@@ -25,7 +25,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CLS_Line.h" />
-    <ClInclude Include="error.h" />
     <ClInclude Include="LS_Circle.h" />
     <ClInclude Include="LS_ConsoleInterface.h" />
     <ClInclude Include="LS_Factory.h" />
@@ -85,14 +84,23 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;FREEGLUT_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)GLincludes</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>lib/freeglut.lib;lib/glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(ProjectDir)lib\$(Configuration)\$(PlatformName)\freeglut_staticd.lib;$(ProjectDir)lib\$(Configuration)\$(PlatformName)\glew32sd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CustomBuildStep>
+      <Command>del *.dll
+del *.pdb
+cp $(ProjectDir)dll\$(Configuration)\$(PlatformName)\*.dll  $(ProjectDir)Debug
+cp $(ProjectDir)dll\$(Configuration)\$(PlatformName)\*.pdb $(ProjectDir)Debug</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>Copy the debug dll and pdb to the debug dir</Message>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>

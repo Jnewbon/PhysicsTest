@@ -14,6 +14,9 @@
 //This will tell the program to output detals of the FPS and Objects to the screen
 #define SHOW_DETAILS
 
+//This will tell the program to highlight objects that are colliding
+//#define SHOW_COLLISION_HIGHLIGHT
+
 //This is for memory leak detection
 #ifdef _DEBUG 
 	#ifndef DGB_NEW

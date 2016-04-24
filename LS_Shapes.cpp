@@ -129,12 +129,19 @@ void CLS_Shapes::draw(GLuint shaderProgram)
 
 	glm::mat4 medelMat = transMat * scaleMat * rotatMat;
 	glm::vec4 color;
+
+#ifdef SHOW_COLLISION_HIGHLIGHT
 	if (this->getIsColliding())
 	{
 		color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 	}
 	else
+	{
 		color = this->getColor();
+	}
+#else 
+	color = this->getColor();
+#endif
 
 	glUniform4fv(colorLoc, 1, (GLfloat*)&color);
 	glUniformMatrix4fv(modelMatrixLoc, 1, GL_FALSE, &medelMat[0][0]);

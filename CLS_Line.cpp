@@ -22,18 +22,26 @@ void CLS_Line::draw(GLuint shaderProgram)
 	glm::mat4 transMat = glm::translate(glm::mat4(1.0f), glm::vec3(this->getLocation().x, this->getLocation().y, 0.0f));
 	glm::mat4 scaleMat = glm::scale(glm::mat4(1.0f), glm::vec3(this->getScale(), this->getScale(), this->getScale()));
 
-	glm::mat4 medelMat = transMat * scaleMat;
+	glm::mat4 modelMat = transMat * scaleMat;
 
 	glm::vec4 color;
+
+#ifdef SHOW_COLLISION_HIGHLIGHT
 	if (this->getIsColliding())
 	{
 		color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 	}
 	else
+	{
 		color = this->getColor();
+	}
+#else 
+	color = this->getColor();
+#endif
+
 
 	glUniform4fv(colorLoc, 1, (GLfloat*)&color);
-	glUniformMatrix4fv(modelMatrixLoc, 1, GL_FALSE, &medelMat[0][0]);
+	glUniformMatrix4fv(modelMatrixLoc, 1, GL_FALSE, &modelMat[0][0]);
 
 	glBegin(GL_LINES);
 	glColor3f(0, 1, 1);

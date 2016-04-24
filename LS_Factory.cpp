@@ -1,8 +1,8 @@
 #include "LS_Factory.h"
 #include "LS_Circle.h"
 #include "CLS_Line.h"
-#include "error.h"
 
+std::list<CLS_Shapes*> CLS_Factory::allObjMV;
 
 CLS_Factory::CLS_Factory()
 {
@@ -16,22 +16,23 @@ void CLS_Factory::registerObj(CLS_Shapes* newObj)
 
 CLS_Shapes* CLS_Factory::createObj(CLS_Shapes::Type objType)
 {
+	CLS_Shapes* obj = NULL;
 	switch (objType)
 	{
 	case CLS_Shapes::CIRCLE:
-		CLS_Shapes* obj = new CLS_Circle();
+		obj = new CLS_Circle();
 		CLS_Factory::registerObj(obj);
 		return obj;
 		break;
 
 	case CLS_Shapes::LINE:
-		CLS_Shapes* obj = new CLS_Line();
+		obj = new CLS_Line();
 		CLS_Factory::registerObj(obj);
 		return obj;
 		break;
 
 	default:
-		throw ERROR_WARNING, ERRORCODE::INVALID_TYPE;
+		throw 1;
 	}
 
 }

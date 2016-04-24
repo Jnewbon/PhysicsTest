@@ -36,6 +36,8 @@ private:
 
 	static void display();
 
+	static void resizeDisplay(int, int);
+
 	static bool quit;
 
 	static void keyHandler(unsigned char, int, int);
