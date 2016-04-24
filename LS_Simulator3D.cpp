@@ -1,18 +1,26 @@
 #include "LS_Simulator3D.h"
+#include "LS_Sphere.h"
 
 #include <stdio.h>
 
 bool					CLS_Simulator3D::fullscreen = false;
+glm::vec2				CLS_Simulator3D::screenLocation[WINDOW_COUNT];
 glm::vec2				CLS_Simulator3D::screenSize[WINDOW_COUNT];
 glm::vec2				CLS_Simulator3D::mouseLocation = glm::vec2(0,0);
 bool					CLS_Simulator3D::mouseButton[MOUSE_BUTTONS];
+glm::vec3				CLS_Simulator3D::cameraLocation = glm::vec3(0, 0, 0);
+glm::vec2				CLS_Simulator3D::cameraRotation = glm::vec2(0, 0);
 GLuint					CLS_Simulator3D::window[WINDOW_COUNT];
 long long				CLS_Simulator3D::lastFrameTime = 0;
+const glm::vec2			CLS_Simulator3D::worldSize = glm::vec2(50, 50);
+glm::vec2				CLS_Simulator3D::screenAspectRatio = glm::vec2(1,1);
+std::list<CLS_Shapes*>	CLS_Simulator3D::objects;
 #ifdef _DEBUG
 std::list<long long>	CLS_Simulator3D::frameRenderTime;
 long					CLS_Simulator3D::averageRenderTime = 0;
 #endif
-//MAJOR Complete the 3D Simulation Class
+
+
 CLS_Simulator3D::CLS_Simulator3D()
 {
 }
@@ -22,7 +30,6 @@ CLS_Simulator3D::~CLS_Simulator3D()
 {
 }
 
-//MAJOR CLS_Simulator3D::init
 void CLS_Simulator3D::init(int argc, char ** argv)
 {
 	glutInit(&argc, argv);
@@ -35,11 +42,31 @@ void CLS_Simulator3D::init(int argc, char ** argv)
 	debug_window_init();
 #endif
 
+	//Initilized glew and output if successful
+	GLenum err = glewInit();
+
+	printf("GLEW Setup... ");
+	if (err == GLEW_OK)
+	{
+		printf("OK");
+	}
+	else
+	{
+		printf("FAILED");
+	}
+	int glMajor, glMinor = 0;
+
+	glGetIntegerv(GL_MAJOR_VERSION, &glMajor);
+	glGetIntegerv(GL_MINOR_VERSION, &glMinor);
+
+	printf("\nOpenGL Version: %i.%i", glMajor, glMinor);
+
 }
 
-//MAJOR CLS_Simulator3D::mainloop
+//MINOR CLS_Simulator3D::mainloop
 void CLS_Simulator3D::mainloop()
 {
+
 	lastFrameTime = CLS_Simulator3D::getTimeStamp();
 	while (true)
 	{
@@ -53,7 +80,7 @@ void CLS_Simulator3D::mainloop()
 	}
 }
 
-void CLS_Simulator3D::setScreenSize(GLuint screenID, int width, int height, bool full_screen)
+void CLS_Simulator3D::setScreenSizeLoc(GLuint screenID, int top, int left, int width, int height, bool full_screen)
 {
 	//Make sure the size of the screen is a valid size
 	if (width > 199 &&
@@ -67,19 +94,23 @@ void CLS_Simulator3D::setScreenSize(GLuint screenID, int width, int height, bool
 	}
 	else
 		throw "Screen size too small";
+
+	screenLocation[screenID].x = left;
+	screenLocation[screenID].y = top;
+
 }
 
-//MAJOR CLS_Simulator3D::initGlut
 void CLS_Simulator3D::initGlut()
 {
 
-	glutInitContextVersion(3, 3);
+	glutInitContextVersion(4, 5);
 	glutInitContextProfile(GLUT_COMPATIBILITY_PROFILE);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
 
 	glutInitWindowSize(CLS_Simulator3D::screenSize[WINDOW_PRIMARY].x, CLS_Simulator3D::screenSize[WINDOW_PRIMARY].y);
-	glutInitWindowPosition(800, 0);
+	glutInitWindowPosition(screenLocation[WINDOW_PRIMARY].x, screenLocation[WINDOW_PRIMARY].y);
 	window[WINDOW_PRIMARY] = glutCreateWindow("PhysicsTest");
+	glClearColor(1, 1, 1, 1);
 
 	//as the display function is a static this call is made very easy.
 	glutDisplayFunc(CLS_Simulator3D::display);
@@ -88,6 +119,7 @@ void CLS_Simulator3D::initGlut()
 	glutPassiveMotionFunc(CLS_Simulator3D::event_MouseMovment);
 	glutMotionFunc(CLS_Simulator3D::event_MouseMovment);
 	glutMouseFunc(CLS_Simulator3D::event_mouseButtons);
+	glutReshapeFunc(CLS_Simulator3D::event_screenResize);
 
 }
 
@@ -101,28 +133,100 @@ void CLS_Simulator3D::event_keyboardSpecialKeys(int, int, int)
 {
 }
 
-//TODO CLS_Simulator3D::event_MouseMovment
 void CLS_Simulator3D::event_MouseMovment(int x, int y)
 {
+	if (mouseButton[GLUT_RIGHT_BUTTON])
+	{
+		cameraRotation.x += mouseLocation.x - x;
+		cameraRotation.y += mouseLocation.y - y;
+		if (cameraRotation.x > 360)
+			cameraRotation.x -= 360;
+		else if (cameraRotation.x < 0)
+			cameraRotation.x += 360;
+		if (cameraRotation.y > 360)
+			cameraRotation.y -= 360;
+		else if (cameraRotation.y < 0)
+			cameraRotation.y += 360;
+
+	}
 	//set the mouse location
 	mouseLocation.x = x;
 	mouseLocation.y = y;
 }
 
-//TODO CLS_Simulator3D::event_mouseButtons
+
 void CLS_Simulator3D::event_mouseButtons(int button, int state, int x, int y)
 {
 	if (button < MOUSE_BUTTONS)
 	{
 		mouseButton[button] = state == 1 ? false : true;
 	}
+
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+	{
+		CLS_Sphere *newObject = new CLS_Sphere();
+		//Set the objects attributes
+		newObject->setLocation(glm::vec3(
+											(worldSize.x * (x / screenSize[WINDOW_PRIMARY].x)) - (worldSize.x /2),
+											-((worldSize.y * (y / screenSize[WINDOW_PRIMARY].y)) - (worldSize.y /2))
+											, 0.0f));
+		newObject->setSpeed(glm::vec3(0.0f, 0.0f, 0.0f));
+		newObject->setMass(7.0f);
+		newObject->setColour(glm::vec4(float(rand() % 255) / 255.0f, float(rand() % 255) / 255.0f, float(rand() % 255) / 255.0f, 1.0f));
+		newObject->setBounceFactor(0.75f);
+		newObject->setScale(1.0f);
+		printf("\nObject Created at: { %.3f, %.3f, %.3f }", newObject->getLocation().x, newObject->getLocation().y, newObject->getLocation().z);
+		objects.push_back(newObject);
+	}
+
+
 }
 
+void CLS_Simulator3D::event_screenResize(int width, int height)
+{
+	screenAspectRatio.y = float(height) / float(width);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	glOrtho(	-(worldSize.x / 2) * screenAspectRatio.y,
+				 (worldSize.x / 2) * screenAspectRatio.y,
+				-(worldSize.y / 2) * screenAspectRatio.x,
+				 (worldSize.y / 2) * screenAspectRatio.x,
+				-400, 400);
+
+	printf("\nScreen Resized to { %i, %i } new Aspect Ratio { %.3f, %.3f }", width, height, screenAspectRatio.x, screenAspectRatio.y);
+
+	
+	//glutPostRedisplay();
+}
+
+//TODO CLS_Simulator3D::display
 void CLS_Simulator3D::display()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
+	glEnable(GL_DEPTH_TEST);
+	glPushMatrix();
+	glRotatef(cameraRotation.x, 0.0f, 0.5f, 0.0f);
+	glRotatef(cameraRotation.y, -0.5f, 0.0f, 0.0f);
+
+	//glColor3f(0.0f,0.0f,0.0f);
+
+	//glutSolidSphere(1.0f, 20, 20);
 
 	
+
+	for (std::list<CLS_Shapes*>::iterator i = objects.begin(); i != objects.end(); i++)
+	{
+#ifdef GLUseShader
+		(*i)->draw(shaderProgram);
+#else
+		(*i)->draw();
+#endif 
+	}
+
+	glPopMatrix();
 	glutSwapBuffers();
 }
 
@@ -185,24 +289,22 @@ long long CLS_Simulator3D::getTimeStamp()
 }
 
 #ifdef _DEBUG
-//TODO CLS_Simulator3D::debug_window
+
 void CLS_Simulator3D::debug_window_init()
 {
 	
-
-	glutInitContextVersion(3, 3);
+	glutInitContextVersion(4, 5);
 	glutInitContextProfile(GLUT_COMPATIBILITY_PROFILE);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE);
 
-	glutInitWindowSize(CLS_Simulator3D::screenSize[WINDOW_DEBUG].x, CLS_Simulator3D::screenSize[WINDOW_DEBUG].y);
-	glutInitWindowPosition(0, 0);
+	glutInitWindowSize(screenSize[WINDOW_DEBUG].x, screenSize[WINDOW_DEBUG].y);
+	glutInitWindowPosition(screenLocation[WINDOW_DEBUG].x, screenLocation[WINDOW_DEBUG].y);
 	window[WINDOW_DEBUG] = glutCreateWindow("Debug infomation");
 
 	glClearColor(1, 1, 1, 1);
 
 	//as the display function is a static this call is made very easy.
 	glutDisplayFunc(CLS_Simulator3D::debug_window_display);
-	glutIdleFunc(CLS_Simulator3D::debug_window_display);
 
 }
 
@@ -210,10 +312,12 @@ void CLS_Simulator3D::debug_window_display()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	int row = 1;
-	screenPrint(row++, 1, "Mouse location: { %.0f, %.0f }" , mouseLocation.x, mouseLocation.y);
+	screenPrint(row++, 1, "Mouse location: {%3.0f,%3.0f}", mouseLocation.x, mouseLocation.y);
+	screenPrint(row++, 1, "Camera location: {%3.0f,%3.0f,%3.0f} Rotation: {%3.0f,%3.0f}", cameraLocation.x, cameraLocation.y, cameraLocation.z, cameraRotation.x,cameraRotation.y);
 	screenPrint(row++, 1, "Mouse buttons pressed: %s%s%s", mouseButton[0] ? "Left " : "", mouseButton[1] ? "Middle  " : "", mouseButton[2] ? "Right " : "");
-	screenPrint(row++, 1, "SPF: %llu mS (%llu mS average over the last %i frames)", frameRenderTime.back(), (long long)(averageRenderTime / (int)NUMBER_OF_TIMEPOINTS), (int)NUMBER_OF_TIMEPOINTS);
-	screenPrint(row++, 1, "FPS: %llu (%llu Average)", 1000 / frameRenderTime.back(), 1000 / ((long long)(averageRenderTime / (int)NUMBER_OF_TIMEPOINTS)));
+	screenPrint(row++, 1, "SPF: %4llu mS (%4llu mS average over the last %i frames)", frameRenderTime.back(), (long long)(averageRenderTime / (int)NUMBER_OF_TIMEPOINTS), (int)NUMBER_OF_TIMEPOINTS);
+	screenPrint(row++, 1, "FPS: %4llu (%4llu Average)", 1000 / frameRenderTime.back(), 1000 / ((long long)(averageRenderTime / (int)NUMBER_OF_TIMEPOINTS)));
+	screenPrint(row++, 1, "Number of Objects: %i",objects.size());
 
 	glutSwapBuffers();
 }

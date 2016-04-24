@@ -3,7 +3,7 @@
 //This file shall contain the #define for the entire program
 
 //if defined the program will use shaders and glm::matrices instead of pushing to the glStack
-#define GLUseShader
+//#define GLUseShader
 
 //This needs to be used otherwise glm::vec's cannot be parsed into methods
 #define GLM_FORCE_PURE

@@ -72,6 +72,9 @@
     <ClCompile Include="LS_Simulator3D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LS_Sphere.cpp">
+      <Filter>Source Files\Shapes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LS_Simulator.h">
@@ -112,6 +115,9 @@
     </ClInclude>
     <ClInclude Include="LS_Simulator3D.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LS_Sphere.h">
+      <Filter>Header Files\Shapes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
