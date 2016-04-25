@@ -1,5 +1,6 @@
 #include "LS_Simulator3D.h"
 #include "LS_Sphere.h"
+#include "LS_Physics.h"
 
 #include <stdio.h>
 
@@ -12,9 +13,9 @@ glm::vec3				CLS_Simulator3D::cameraLocation = glm::vec3(0, 0, 0);
 glm::vec2				CLS_Simulator3D::cameraRotation = glm::vec2(0, 0);
 GLuint					CLS_Simulator3D::window[WINDOW_COUNT];
 long long				CLS_Simulator3D::lastFrameTime = 0;
-const glm::vec2			CLS_Simulator3D::worldSize = glm::vec2(50, 50);
+const glm::vec2			CLS_Simulator3D::worldSize = glm::vec2(10, 10);
 glm::vec2				CLS_Simulator3D::screenAspectRatio = glm::vec2(1,1);
-std::list<CLS_Shapes*>	CLS_Simulator3D::objects;
+std::vector<CLS_Shapes*>	CLS_Simulator3D::objects;
 #ifdef _DEBUG
 std::list<long long>	CLS_Simulator3D::frameRenderTime;
 long					CLS_Simulator3D::averageRenderTime = 0;
@@ -22,7 +23,7 @@ long					CLS_Simulator3D::averageRenderTime = 0;
 
 
 CLS_Simulator3D::CLS_Simulator3D()
-{
+{	
 }
 
 //TODO CLS_Simulator3D::~CLS_Simulator3D
@@ -60,6 +61,10 @@ void CLS_Simulator3D::init(int argc, char ** argv)
 	glGetIntegerv(GL_MINOR_VERSION, &glMinor);
 
 	printf("\nOpenGL Version: %i.%i", glMajor, glMinor);
+	(true);
+	//TODO Change to glm::vec2
+	CLS_Physics::setScreenSize(CLS_VectorPoint<float>(worldSize.x, worldSize.y));
+	CLS_Physics::CCDStaus(false, 5);
 
 }
 
@@ -76,7 +81,12 @@ void CLS_Simulator3D::mainloop()
 			glutSetWindow(window[i]);
 			glutPostRedisplay();
 		}
+		while (CLS_Simulator3D::getTimeStamp() - lastFrameTime < 16)
+		{ }
+		CLS_Physics::applyPhysics(CLS_Simulator3D::getTimeStamp() - lastFrameTime, &objects);
+
 		lastFrameTime = CLS_Simulator3D::getTimeStamp();
+		
 	}
 }
 
@@ -137,16 +147,22 @@ void CLS_Simulator3D::event_MouseMovment(int x, int y)
 {
 	if (mouseButton[GLUT_RIGHT_BUTTON])
 	{
+		if (cameraRotation.y >= -90 && cameraRotation.y <= 90)
+			cameraRotation.y += mouseLocation.y - y;
+		else if (cameraRotation.y < -90)
+			cameraRotation.y = -90;
+		else 
+			cameraRotation.y = 90;
+
 		cameraRotation.x += mouseLocation.x - x;
-		cameraRotation.y += mouseLocation.y - y;
 		if (cameraRotation.x > 360)
 			cameraRotation.x -= 360;
 		else if (cameraRotation.x < 0)
 			cameraRotation.x += 360;
-		if (cameraRotation.y > 360)
+		/*if (cameraRotation.y > 360)
 			cameraRotation.y -= 360;
 		else if (cameraRotation.y < 0)
-			cameraRotation.y += 360;
+			cameraRotation.y += 360;*/
 
 	}
 	//set the mouse location
@@ -173,7 +189,7 @@ void CLS_Simulator3D::event_mouseButtons(int button, int state, int x, int y)
 		newObject->setSpeed(glm::vec3(0.0f, 0.0f, 0.0f));
 		newObject->setMass(7.0f);
 		newObject->setColour(glm::vec4(float(rand() % 255) / 255.0f, float(rand() % 255) / 255.0f, float(rand() % 255) / 255.0f, 1.0f));
-		newObject->setBounceFactor(0.75f);
+		newObject->setBounceFactor(0.8f);
 		newObject->setScale(1.0f);
 		printf("\nObject Created at: { %.3f, %.3f, %.3f }", newObject->getLocation().x, newObject->getLocation().y, newObject->getLocation().z);
 		objects.push_back(newObject);
@@ -217,7 +233,7 @@ void CLS_Simulator3D::display()
 
 	
 
-	for (std::list<CLS_Shapes*>::iterator i = objects.begin(); i != objects.end(); i++)
+	for (std::vector<CLS_Shapes*>::iterator i = objects.begin(); i != objects.end(); i++)
 	{
 #ifdef GLUseShader
 		(*i)->draw(shaderProgram);
@@ -317,7 +333,11 @@ void CLS_Simulator3D::debug_window_display()
 	screenPrint(row++, 1, "Mouse buttons pressed: %s%s%s", mouseButton[0] ? "Left " : "", mouseButton[1] ? "Middle  " : "", mouseButton[2] ? "Right " : "");
 	screenPrint(row++, 1, "SPF: %4llu mS (%4llu mS average over the last %i frames)", frameRenderTime.back(), (long long)(averageRenderTime / (int)NUMBER_OF_TIMEPOINTS), (int)NUMBER_OF_TIMEPOINTS);
 	screenPrint(row++, 1, "FPS: %4llu (%4llu Average)", 1000 / frameRenderTime.back(), 1000 / ((long long)(averageRenderTime / (int)NUMBER_OF_TIMEPOINTS)));
-	screenPrint(row++, 1, "Number of Objects: %i",objects.size());
+	screenPrint(row++, 1, "Number of Objects: %i Number of Collisions %llu", objects.size(), CLS_Physics::collisionCounter);
+	for (int i = 0; i < objects.size(); i++)
+	{
+		screenPrint(row++, 1, "Object %i Speed: {%3.3f,%3.3f}",i, objects[i]->getSpeed().x, objects[i]->getSpeed().y);
+	}
 
 	glutSwapBuffers();
 }

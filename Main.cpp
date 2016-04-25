@@ -22,9 +22,14 @@ void main(int argc, char **argv)
 	CLS_Simulator3D::setScreenSizeLoc(WINDOW_DEBUG, 831, 0, 500, 200);
 #endif
 
-	CLS_Simulator3D::init(argc,argv);
+	//CLS_Simulator::simulationInit(argc,argv);
+
+	//CLS_Simulator::mainLoop();
+
+	CLS_Simulator3D::init(argc, argv);
 
 	CLS_Simulator3D::mainloop();
+
 	system("PAUSE");
 }
 

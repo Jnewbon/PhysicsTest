@@ -11,6 +11,13 @@ CLS_Sphere::~CLS_Sphere()
 {
 }
 
+void CLS_Sphere::setScale(float newScale)
+{
+	CLS_Shapes::setScale(newScale);
+	//Width of the circle is -1.0f to 1.0f which is 2.0f. Wdht and height is the same
+	this->setCollisionBox(glm::vec3(this->getScale(),this->getScale(), this->getScale()));
+}
+
 #ifdef GLUseShader
 void CLS_Sphere::draw(GLuint shaderProgram)
 {
@@ -62,7 +69,7 @@ void CLS_Sphere::draw()
 	glScalef(getScale(), getScale(), getScale());
 
 	glColor3f(getColor().x, getColor().y, getColor().z);
-	glutSolidSphere(1.0f, 20, 20);
+	glutSolidSphere(0.5f, 20, 20);
 
 	glPopMatrix();
 	glPopMatrix();

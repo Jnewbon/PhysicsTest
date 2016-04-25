@@ -3,6 +3,7 @@
 #include "GL\glew\glew.h"
 #include "GL\glut.h"
 #include "GL\freeglut.h"
+#include <vector>
 #include <list>
 #include "LS_Shapes.h"
 
@@ -59,7 +60,7 @@ private:
 	static glm::vec2	screenAspectRatio;								//will contain the world size
 
 
-	static std::list<CLS_Shapes*> objects;
+	static std::vector<CLS_Shapes*> objects;
 
 	/* ####################### */
 	/* ## Private Functions ## */

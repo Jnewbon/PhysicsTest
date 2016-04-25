@@ -403,7 +403,7 @@ void CLS_Physics::applyObjectMovment(long long elapsedTime,CLS_Shapes* object)
 	//Also rotate the object using the roational velocity
 	object->setRotaion(object->getRotation() + ((object->getRotationalVelociy()/1000) * float(elapsedTime)));
 }
-
+//TODO CCD Colliosn currently broken
 void CLS_Physics::CCD_ColliosnLoop(long long elapsedTime, CLS_Shapes *obj1, CLS_Shapes *obj2)
 {
 	//As the detection is done in steps save the original speed of both objects

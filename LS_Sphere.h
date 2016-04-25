@@ -7,6 +7,8 @@ public:
 	CLS_Sphere();
 	~CLS_Sphere();
 
+	void setScale(float);
+
 #ifdef GLUseShader
 	void draw(GLuint shaderProgram);
 #else
