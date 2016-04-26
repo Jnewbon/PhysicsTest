@@ -13,7 +13,7 @@ CLS_VectorPoint<float> CLS_Physics::viewSize = CLS_VectorPoint<float>(0,0);
 
 //For the moment the resistance of air and ground can be done by simple math higher the number the more resistance the object encounters when moving
 float CLS_Physics::RESISTANCE_AIR = 0.0f;
-float CLS_Physics::RESISTANCE_GROUND = 0.0;
+float CLS_Physics::RESISTANCE_GROUND = 0.0f;
 
 float CLS_Physics::ACCELARATION = -120.81f;
 float CLS_Physics::MATH_PI = 3.14159265f;

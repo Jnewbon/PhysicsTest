@@ -11,6 +11,9 @@ glm::vec2				CLS_Simulator3D::mouseLocation = glm::vec2(0,0);
 bool					CLS_Simulator3D::mouseButton[MOUSE_BUTTONS];
 glm::vec3				CLS_Simulator3D::cameraLocation = glm::vec3(0, 0, 0);
 glm::vec2				CLS_Simulator3D::cameraRotation = glm::vec2(0, 0);
+#ifdef GLUseShader
+glm::mat4				CLS_Simulator3D::camera[NUM_OF_CAMERA_MATX];
+#endif
 GLuint					CLS_Simulator3D::window[WINDOW_COUNT];
 long long				CLS_Simulator3D::lastFrameTime = 0;
 const glm::vec2			CLS_Simulator3D::worldSize = glm::vec2(10, 10);
@@ -75,6 +78,7 @@ void CLS_Simulator3D::mainloop()
 	lastFrameTime = CLS_Simulator3D::getTimeStamp();
 	while (true)
 	{
+		cameraRotation.x += 0.1f;
 		glutMainLoopEvent();
 		for (int i = 0; i < WINDOW_COUNT; i++)
 		{
@@ -189,7 +193,7 @@ void CLS_Simulator3D::event_mouseButtons(int button, int state, int x, int y)
 		newObject->setSpeed(glm::vec3(0.0f, 0.0f, 0.0f));
 		newObject->setMass(7.0f);
 		newObject->setColour(glm::vec4(float(rand() % 255) / 255.0f, float(rand() % 255) / 255.0f, float(rand() % 255) / 255.0f, 1.0f));
-		newObject->setBounceFactor(0.8f);
+		newObject->setBounceFactor(1.0f);
 		newObject->setScale(1.0f);
 		printf("\nObject Created at: { %.3f, %.3f, %.3f }", newObject->getLocation().x, newObject->getLocation().y, newObject->getLocation().z);
 		objects.push_back(newObject);
@@ -204,12 +208,15 @@ void CLS_Simulator3D::event_screenResize(int width, int height)
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
+#ifdef GLUseShader
+	gluPerspective(50.0f, screenAspectRatio.y, 0.0f, 100.0f);
+#else
 	glOrtho(	-(worldSize.x / 2) * screenAspectRatio.y,
 				 (worldSize.x / 2) * screenAspectRatio.y,
 				-(worldSize.y / 2) * screenAspectRatio.x,
 				 (worldSize.y / 2) * screenAspectRatio.x,
 				-400, 400);
-
+#endif
 	printf("\nScreen Resized to { %i, %i } new Aspect Ratio { %.3f, %.3f }", width, height, screenAspectRatio.x, screenAspectRatio.y);
 
 	
@@ -227,11 +234,6 @@ void CLS_Simulator3D::display()
 	glRotatef(cameraRotation.x, 0.0f, 0.5f, 0.0f);
 	glRotatef(cameraRotation.y, -0.5f, 0.0f, 0.0f);
 
-	//glColor3f(0.0f,0.0f,0.0f);
-
-	//glutSolidSphere(1.0f, 20, 20);
-
-	
 
 	for (std::vector<CLS_Shapes*>::iterator i = objects.begin(); i != objects.end(); i++)
 	{

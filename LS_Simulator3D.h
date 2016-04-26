@@ -41,6 +41,14 @@ public:
 private:
 
 	/* ####################### */
+	/* #Private Enumerations## */
+	/* ####################### */
+	enum cameraMatracies {
+			CAM_PERSPECTIVE,
+			NUM_OF_CAMERA_MATX
+		};
+
+	/* ####################### */
 	/* ## Private Variables ## */
 	/* ####################### */
 
@@ -51,6 +59,10 @@ private:
 	static bool			mouseButton[MOUSE_BUTTONS];						//Will contain the state of all the mouse buttons
 	static glm::vec3	cameraLocation;									//will contain the location of the camera
 	static glm::vec2	cameraRotation;									//will contain the current updown and side to side rotation of the camera
+
+#ifdef GLUseShader
+	static glm::mat4	camera[NUM_OF_CAMERA_MATX];						//This will contain the matricies that the camera needs to function normally
+#endif
 
 	static GLuint		window[WINDOW_COUNT];							//The identifers for the display windows
 
