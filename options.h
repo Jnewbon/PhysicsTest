@@ -9,7 +9,7 @@
 #define GLM_FORCE_PURE
 
 //And this is for Release building
-#define GLEW_STATIC 1
+//#define GLEW_STATIC 1
 
 //This will tell the program to output detals of the FPS and Objects to the screen
 #define SHOW_DETAILS
